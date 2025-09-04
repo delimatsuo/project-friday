@@ -266,3 +266,4 @@ Project Friday is an iOS application that gives individuals back their time and 
 - Android application
 - Detailed in-app analytics
 - Siri integration (moved to V1.1)
+

@@ -1,9 +1,9 @@
 {
   "projects": {
-    "default": "project-friday-v1",
-    "dev": "project-friday-v1-dev",
-    "staging": "project-friday-v1-staging",
-    "production": "project-friday-v1"
+    "default": "project-friday-471118",
+    "dev": "project-friday-471118",
+    "staging": "project-friday-471118",
+    "production": "project-friday-471118"
   },
   "targets": {},
   "etags": {}

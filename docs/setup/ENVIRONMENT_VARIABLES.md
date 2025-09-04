@@ -24,7 +24,7 @@ backend/functions/
 #### `FIREBASE_PROJECT_ID`
 - **Description**: Your Firebase/GCP project ID
 - **Format**: String (lowercase, hyphens allowed)
-- **Example**: `project-friday-dev`
+- **Example**: `project-friday-471118`
 - **Required**: Yes
 - **Where to find**: Firebase Console > Project Settings > General tab
 
@@ -46,7 +46,7 @@ backend/functions/
 #### `FIREBASE_CLIENT_EMAIL`
 - **Description**: Service account email address
 - **Format**: Email address
-- **Example**: `firebase-adminsdk-xxxxx@project-friday-dev.iam.gserviceaccount.com`
+- **Example**: `firebase-adminsdk-xxxxx@project-friday-471118.iam.gserviceaccount.com`
 - **Required**: Yes
 - **Where to find**: Service account JSON key file (`client_email` field)
 
@@ -60,7 +60,7 @@ backend/functions/
 #### `FIREBASE_CLIENT_X509_CERT_URL`
 - **Description**: Service account certificate URL
 - **Format**: URL
-- **Example**: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40project-friday-dev.iam.gserviceaccount.com`
+- **Example**: `https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxxxx%40project-friday-471118.iam.gserviceaccount.com`
 - **Required**: Yes
 - **Where to find**: Service account JSON key file (`client_x509_cert_url` field)
 
@@ -69,7 +69,7 @@ backend/functions/
 #### `GOOGLE_CLOUD_PROJECT_ID`
 - **Description**: Google Cloud Project ID (usually same as Firebase)
 - **Format**: String
-- **Example**: `project-friday-dev`
+- **Example**: `project-friday-471118`
 - **Required**: Yes
 - **Where to find**: GCP Console > Project selector
 
@@ -133,7 +133,7 @@ backend/functions/
 #### `TWILIO_VOICE_WEBHOOK_URL`
 - **Description**: Webhook URL for incoming voice calls
 - **Format**: URL
-- **Example**: `https://us-central1-project-friday-dev.cloudfunctions.net/handleCall`
+- **Example**: `https://us-central1-project-friday-471118.cloudfunctions.net/handleCall`
 - **Required**: Yes
 - **Format**: `https://{region}-{project-id}.cloudfunctions.net/handleCall`
 
@@ -292,7 +292,7 @@ MAX_CALL_DURATION=300
 ### `.env.local` (Development)
 ```env
 # Copy from .env.example and fill in real values
-FIREBASE_PROJECT_ID=project-friday-dev
+FIREBASE_PROJECT_ID=project-friday-471118
 # ... other development values
 
 # Development-specific settings

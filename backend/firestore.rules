@@ -15,8 +15,8 @@ service cloud.firestore {
     }
     
     function hasValidUserData() {
-      return request.resource.data.keys().hasAll(['userId', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
-             request.resource.data.userId is string &&
+      return request.resource.data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
+             request.resource.data.uid is string &&
              request.resource.data.email is string &&
              request.resource.data.displayName is string &&
              request.resource.data.createdAt is timestamp &&
@@ -24,11 +24,12 @@ service cloud.firestore {
     }
     
     function hasValidCallLogData() {
-      return request.resource.data.keys().hasAll(['userId', 'callType', 'duration', 'summary', 'createdAt', 'updatedAt']) &&
+      return request.resource.data.keys().hasAll(['userId', 'twilioCallSid', 'callerId', 'duration', 'aiSummary', 'createdAt', 'updatedAt']) &&
              request.resource.data.userId is string &&
-             request.resource.data.callType is string &&
+             request.resource.data.twilioCallSid is string &&
+             request.resource.data.callerId is string &&
              request.resource.data.duration is number &&
-             request.resource.data.summary is string &&
+             request.resource.data.aiSummary is string &&
              request.resource.data.createdAt is timestamp &&
              request.resource.data.updatedAt is timestamp &&
              request.resource.data.duration >= 0;
@@ -45,13 +46,13 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                       isValidUser(userId) && 
                       hasValidUserData() &&
-                      request.resource.data.userId == request.auth.uid;
+                      request.resource.data.uid == request.auth.uid;
       
       allow update: if isAuthenticated() && 
                       isValidUser(userId) && 
                       hasValidUserData() &&
-                      request.resource.data.userId == request.auth.uid &&
-                      request.resource.data.userId == resource.data.userId;
+                      request.resource.data.uid == request.auth.uid &&
+                      request.resource.data.uid == resource.data.uid;
     }
     
     // Call logs collection rules
