@@ -6,8 +6,7 @@
   "functions": [
     {
       "source": "functions",
-      "codebase": "default",
-      "runtime": "nodejs18"
+      "codebase": "default"
     }
   ],
   "storage": {

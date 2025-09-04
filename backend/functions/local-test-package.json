@@ -1,0 +1,19 @@
+{
+  "name": "project-friday-simple-webhook",
+  "version": "1.0.0",
+  "description": "Simple Twilio webhook for local testing - Project Friday",
+  "type": "module",
+  "main": "simple-handleCall.js",
+  "scripts": {
+    "start": "functions-framework --source=simple-handleCall.js --target=handleCall --port=8080",
+    "test": "node test-webhook.js"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "18"
+  }
+}

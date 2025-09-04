@@ -2,6 +2,7 @@
   "name": "project-friday-functions",
   "version": "1.0.0",
   "description": "Cloud Functions for Project Friday - AI-powered call handling",
+  "type": "module",
   "main": "index.js",
   "engines": {
     "node": "20"
