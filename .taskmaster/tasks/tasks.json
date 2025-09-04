@@ -1,0 +1,1010 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Foundation: Setup GCP/Firebase Project and Firestore",
+        "description": "Initialize the Google Cloud Project, enable Firebase services, and configure Firestore database with initial data models and security rules.",
+        "details": "Create a new GCP project. Enable Firebase, Authentication (Email, Google, Apple), Firestore, Cloud Functions, and Cloud Storage. Define the 'users' and 'call_logs' collections in Firestore. Implement initial security rules to restrict access to authenticated users and protect user data.",
+        "testStrategy": "Manually verify project setup in the Firebase console. Use the Firestore emulator to test security rules, ensuring users can only read/write their own data. Write unit tests for security rules.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create GCP Project and Add Firebase",
+            "description": "Provision a new Google Cloud Platform (GCP) project and then associate it with a new Firebase project to enable Firebase services.",
+            "dependencies": [],
+            "details": "Using the Google Cloud Console, create a new project with a unique ID. Once created, navigate to the Firebase Console and use the 'Add project' flow to import the existing GCP project into Firebase. Select or create a billing account as needed.\n<info added on 2025-09-04T16:17:33.680Z>\nThe local project has been initialized for Firebase development. Node.js dependencies are installed, and Firebase configuration files have been created. Local validation scripts, including Node.js syntax checks, are operational. The Jest testing framework has been configured to support ES modules.\n</info added on 2025-09-04T16:17:33.680Z>",
+            "status": "in-progress",
+            "testStrategy": "Verify that the new project appears in both the GCP Console project list and the Firebase Console project list."
+          },
+          {
+            "id": 2,
+            "title": "Enable Core Firebase Services",
+            "description": "Activate and perform initial configuration for the core Firebase services required by the application: Firestore, Cloud Functions, and Cloud Storage.",
+            "dependencies": [],
+            "details": "In the Firebase project console, navigate to the 'Build' section. Enable the Firestore Database, selecting 'Native mode' and a server location. Enable Cloud Storage by creating a default bucket. Enable Cloud Functions, which may require upgrading the project to the 'Blaze' (pay-as-you-go) plan.",
+            "status": "pending",
+            "testStrategy": "Confirm in the Firebase console that the Firestore, Storage, and Functions sections are accessible and show an 'enabled' or 'active' status."
+          },
+          {
+            "id": 3,
+            "title": "Configure Firebase Authentication Providers",
+            "description": "Enable and configure the specific sign-in methods that will be supported by the application: Email/Password, Google, and Apple.",
+            "dependencies": [],
+            "details": "In the Firebase Authentication 'Sign-in method' tab, enable the Email/Password provider. Enable the Google provider, ensuring a project support email is configured. Enable the Apple provider, which involves generating necessary keys and identifiers in the Apple Developer portal and uploading them to Firebase.",
+            "status": "pending",
+            "testStrategy": "Manually check the Firebase Authentication console to confirm that the Email/Password, Google, and Apple providers are listed with an 'Enabled' status."
+          },
+          {
+            "id": 4,
+            "title": "Define and Initialize Firestore Collections",
+            "description": "Establish the initial data structure for the 'users' and 'call_logs' collections by documenting their schemas and creating placeholder documents.",
+            "dependencies": [],
+            "details": "Document the intended fields for documents in the 'users' collection (e.g., displayName, email, createdAt) and the 'call_logs' collection (e.g., userId, twilioCallSid, timestamp, duration). In the Firestore Data viewer, manually create a 'users' collection and a 'call_logs' collection with one sample document each to initialize them.",
+            "status": "pending",
+            "testStrategy": "Verify that the 'users' and 'call_logs' collections are visible in the Firestore Data viewer in the Firebase console."
+          },
+          {
+            "id": 5,
+            "title": "Implement Initial Firestore Security Rules",
+            "description": "Write and deploy the first version of Firestore security rules to restrict database access to authenticated users and protect user-specific data.",
+            "dependencies": [],
+            "details": "In the Firestore 'Rules' tab, write rules to match the 'users/{userId}' and 'call_logs/{logId}' paths. The rules should enforce that a user can only read or write their own user document (where `request.auth.uid == userId`). For call logs, allow any authenticated user to create a log, but only allow reads for logs where the `userId` field matches their `request.auth.uid`. Deny all other access by default.",
+            "status": "pending",
+            "testStrategy": "Use the Firebase Rules Playground to simulate read and write operations. Test that an authenticated user can access their own data but is denied access to another user's data. Test that unauthenticated access is blocked."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Foundation: Configure Twilio Account and Phone Number Provisioning",
+        "description": "Set up the Twilio account, purchase a pool of phone numbers, and configure the voice webhook to point to a placeholder Cloud Function URL.",
+        "details": "Create a Twilio account and upgrade it. Purchase at least one phone number for development. Configure the 'A CALL COMES IN' webhook to target the future Cloud Function endpoint. Securely store Twilio Account SID and Auth Token in Google Secret Manager.",
+        "testStrategy": "Make a test call to the provisioned Twilio number and verify that the webhook request is logged by Twilio, even if it fails to reach the (not yet deployed) function.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create and Upgrade Twilio Account",
+            "description": "Register for a new Twilio account and complete the upgrade process by providing payment information to remove trial account restrictions.",
+            "dependencies": [],
+            "details": "Navigate to the Twilio website to sign up. Follow the on-screen instructions to upgrade from a trial account to a full paid account by adding a payment method and funding the account balance. This is required to purchase phone numbers and use the service without trial limitations.",
+            "status": "pending",
+            "testStrategy": "Log in to the Twilio console and verify that the 'Trial' banner is no longer displayed on the dashboard, confirming the account has been successfully upgraded."
+          },
+          {
+            "id": 2,
+            "title": "Purchase Development Phone Number",
+            "description": "Search for and purchase at least one voice-capable phone number from the Twilio console to be used for development and testing.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Using the Twilio console, navigate to the 'Phone Numbers' > 'Manage' > 'Buy a number' section. Use the search filters to find a number with 'Voice' capabilities in the desired country. Complete the purchase process.",
+            "status": "pending",
+            "testStrategy": "Confirm that the newly purchased phone number is listed under the 'Active Numbers' section in the Twilio console."
+          },
+          {
+            "id": 3,
+            "title": "Configure Voice Webhook for Provisioned Number",
+            "description": "Set the 'A CALL COMES IN' webhook for the newly purchased phone number to point to a placeholder URL for the future Cloud Function.",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "In the Twilio console, navigate to the configuration page for the active phone number. Under the 'Voice & Fax' section, locate the 'A CALL COMES IN' setting. Configure it with the method 'HTTP POST' and set the URL to a placeholder for the future Cloud Function (e.g., https://<region>-<project-id>.cloudfunctions.net/voiceHandler).",
+            "status": "pending",
+            "testStrategy": "Make a test call to the provisioned Twilio number. Check the Twilio call logs to verify that Twilio attempted to POST to the specified webhook URL and received an error (e.g., 404 Not Found), which is the expected behavior at this stage."
+          },
+          {
+            "id": 4,
+            "title": "Retrieve Twilio Account SID and Auth Token",
+            "description": "Locate and securely copy the Account SID and Auth Token from the main Twilio account console dashboard.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "From the main Twilio Console Dashboard, find the 'Account Info' panel. The Account SID is visible by default. Click the 'Show' button to reveal the Auth Token. Copy both values to a temporary secure location.",
+            "status": "pending",
+            "testStrategy": "Verify that the copied Account SID starts with 'AC' and the Auth Token is a 32-character alphanumeric string."
+          },
+          {
+            "id": 5,
+            "title": "Store Twilio Credentials in Google Secret Manager",
+            "description": "Create two new secrets in Google Secret Manager to securely store the Twilio Account SID and Auth Token, ensuring they are accessible by the Cloud Functions service account.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "In the Google Cloud Console, navigate to Secret Manager. Create a new secret named 'twilio_account_sid' and add the SID as the secret value. Create a second secret named 'twilio_auth_token' and add the Auth Token as its value. Grant the 'Secret Manager Secret Accessor' IAM role to the default Cloud Functions service account for these secrets.",
+            "status": "pending",
+            "testStrategy": "Verify in the GCP console that both secrets ('twilio_account_sid' and 'twilio_auth_token') exist and have a version 1. Check the IAM policy for each secret to confirm the Cloud Functions service account has accessor permissions."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Backend: Develop Initial Twilio Webhook Cloud Function",
+        "description": "Create and deploy a basic Node.js or Python Cloud Function that can receive incoming voice webhooks from Twilio and respond with a simple TwiML message.",
+        "details": "Develop an HTTP-triggered Cloud Function. Use the Twilio helper library to parse incoming requests. The function should initially respond with a TwiML `<Say>` verb to confirm the call was received. Deploy the function and update the Twilio webhook URL.",
+        "testStrategy": "Call the Twilio number and listen for the automated voice response. Check Cloud Function logs for successful invocation and correct request parsing.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Cloud Function Project and Install Dependencies",
+            "description": "Initialize a new Google Cloud Function project for the Twilio webhook. Install the necessary dependencies, including the Twilio helper library and the Functions Framework for local development.",
+            "dependencies": [],
+            "details": "Create a new directory for the function. Initialize it with a `package.json` (for Node.js) or `requirements.txt` (for Python). Add `twilio` and `@google-cloud/functions-framework` (or equivalent) as dependencies.",
+            "status": "pending",
+            "testStrategy": "Run `npm install` or `pip install -r requirements.txt` to ensure all dependencies are installed correctly without errors."
+          },
+          {
+            "id": 2,
+            "title": "Scaffold the HTTP-Triggered Cloud Function",
+            "description": "Create the main function file (e.g., `index.js` or `main.py`) and implement the basic structure for an HTTP-triggered function that can receive POST requests from Twilio.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Write the function signature that accepts request and response objects. Initially, have it log the incoming request body and return a simple '200 OK' status with a placeholder text response. This verifies the basic HTTP handling.",
+            "status": "pending",
+            "testStrategy": "Run the function locally using the Functions Framework and send a mock POST request using a tool like `curl` or Postman. Verify that the function logs the request and returns a 200 status code."
+          },
+          {
+            "id": 3,
+            "title": "Generate TwiML Response with Twilio Helper Library",
+            "description": "Integrate the Twilio helper library to parse the incoming request and generate a valid TwiML response containing a `<Say>` verb.",
+            "dependencies": [
+              "3.2"
+            ],
+            "details": "Import the Twilio library. Inside the function, create a new `VoiceResponse` object. Use the `.say()` method to add a message like 'Call received.' Convert the response object to an XML string and send it back with the `Content-Type` header set to `text/xml`.",
+            "status": "pending",
+            "testStrategy": "Update the local test from the previous subtask. Send a mock Twilio POST request and assert that the function's response body is a valid TwiML XML string containing the expected `<Say>` verb and message."
+          },
+          {
+            "id": 4,
+            "title": "Deploy the Initial Function to Google Cloud",
+            "description": "Deploy the completed Cloud Function to the Google Cloud Platform, making it accessible via a public HTTP endpoint.",
+            "dependencies": [
+              "3.3"
+            ],
+            "details": "Use the `gcloud functions deploy` command-line tool to deploy the function. Specify the runtime (Node.js/Python), trigger type (HTTP), and entry point. Ensure appropriate permissions are set to allow public invocation.",
+            "status": "pending",
+            "testStrategy": "After deployment is successful, access the function's trigger URL using `curl`. It should return the TwiML response. Check the Google Cloud logs to confirm there were no deployment or runtime errors."
+          },
+          {
+            "id": 5,
+            "title": "Update Twilio Webhook URL and Conduct End-to-End Test",
+            "description": "Configure the Twilio phone number to use the newly deployed Cloud Function's URL as its voice webhook and perform a live end-to-end test.",
+            "dependencies": [
+              "3.4"
+            ],
+            "details": "Log in to the Twilio console. Navigate to the active phone number's configuration. In the 'A CALL COMES IN' section, set the webhook to the URL of the deployed Cloud Function and ensure the method is set to `HTTP POST`.",
+            "status": "pending",
+            "testStrategy": "Call the Twilio phone number from a separate phone. Listen for the automated voice response defined in the TwiML `<Say>` verb. Check the Cloud Function's logs in Google Cloud to verify it was invoked successfully by Twilio."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "iOS: Create Project Skeleton and Authentication UI",
+        "description": "Set up a new iOS project using Swift and SwiftUI. Integrate Firebase SDKs and build the UI screens for Sign-in, Sign-up, and password reset.",
+        "details": "Create a new Xcode project targeting iOS 15+. Add Firebase dependencies using Swift Package Manager (Authentication, Firestore). Build the UI views for email/password, Google Sign-In, and Sign in with Apple. Do not implement the logic yet, focus on UI layout.",
+        "testStrategy": "Run the app in the iOS simulator. Verify that all authentication screens render correctly and are responsive to different device sizes. UI tests can be written to check for element presence.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Xcode Project and Define Basic Structure",
+            "description": "Initialize a new Xcode project for the iOS application using the SwiftUI App life cycle, targeting iOS 15+, and set up a basic folder structure.",
+            "dependencies": [],
+            "details": "Create a new project in Xcode using the 'App' template. Set the interface to SwiftUI and the life cycle to 'SwiftUI App'. In the project settings, set the minimum deployment target to iOS 15.0. Create placeholder folders for `Views`, `ViewModels`, and `Services` to establish a clean architecture.",
+            "status": "pending",
+            "testStrategy": "Build and run the template app on an iOS 15+ simulator. Verify the project builds without errors and the initial view is displayed."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Firebase SDKs and Configuration",
+            "description": "Add Firebase Authentication and Firestore SDKs to the project using Swift Package Manager and configure the Firebase app instance.",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Using Xcode's Swift Package Manager, add the `firebase-ios-sdk` package. Select the `FirebaseAuth` and `FirebaseFirestore` products. Download the `GoogleService-Info.plist` file from the Firebase console (created in Task 1) and add it to the project's root, ensuring it's included in the main app target. Add `FirebaseApp.configure()` to the app's initializer.",
+            "status": "pending",
+            "testStrategy": "Compile the project to confirm the SDKs are linked correctly. Run the app and check the Xcode console for a successful Firebase initialization message without any configuration-related errors."
+          },
+          {
+            "id": 3,
+            "title": "Build Email/Password and Password Reset UI Views",
+            "description": "Create the SwiftUI views for user sign-in, sign-up, and password reset using email and password fields.",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Create three separate SwiftUI files: `SignInView.swift`, `SignUpView.swift`, and `ForgotPasswordView.swift`. Implement the UI using `TextField` for email, `SecureField` for password, and `Button` for actions. Structure the views with `VStack` and `Spacer` for layout. Do not implement any logic; use placeholder actions for buttons.",
+            "status": "pending",
+            "testStrategy": "Preview each view in Xcode's canvas. Run the app in the simulator and verify the layout is correct and responsive on different device sizes (e.g., iPhone SE, iPhone 14 Pro Max)."
+          },
+          {
+            "id": 4,
+            "title": "Implement Google Sign-In Button UI",
+            "description": "Add the official Google Sign-In button to the sign-in and sign-up screens.",
+            "dependencies": [
+              "4.2",
+              "4.3"
+            ],
+            "details": "Add the `GoogleSignIn` Swift Package via SPM. Create a `UIViewRepresentable` wrapper for the `GIDSignInButton` to use it within the SwiftUI `SignInView` and `SignUpView`. Place the button below the email/password fields.",
+            "status": "pending",
+            "testStrategy": "Run the app and navigate to the sign-in/sign-up screens. Verify the Google Sign-In button is rendered correctly according to Google's branding guidelines."
+          },
+          {
+            "id": 5,
+            "title": "Implement Sign in with Apple Button UI",
+            "description": "Add the native 'Sign in with Apple' button to the sign-in and sign-up screens.",
+            "dependencies": [
+              "4.3"
+            ],
+            "details": "In the `SignInView` and `SignUpView`, import the `AuthenticationServices` framework and use the native `SignInWithAppleButton`. Place it alongside the Google Sign-In button. Enable the 'Sign in with Apple' capability in the project's 'Signing & Capabilities' tab.",
+            "status": "pending",
+            "testStrategy": "Run the app on a simulator or device. Verify the 'Sign in with Apple' button appears correctly on the sign-in/sign-up screens. Check that its appearance adapts correctly to both light and dark mode."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Backend: Integrate Google Speech-to-Text and Text-to-Speech",
+        "description": "Enhance the Cloud Function to handle bidirectional audio streams with Twilio, transcribing caller audio in real-time and synthesizing AI responses back to the caller.",
+        "details": "Modify the Cloud Function to use Twilio's `<Connect><Stream>` TwiML for bidirectional streaming over WebSockets. Integrate Google Speech-to-Text API for real-time transcription of the inbound audio stream. Integrate Google Text-to-Speech API to convert text responses into audio for the outbound stream.",
+        "testStrategy": "Use a test script to send a WebSocket audio stream to the function and verify a transcript is generated. Test the TTS integration by providing text and ensuring an audio file/stream is created. End-to-end test by calling the Twilio number and speaking; check logs for transcription.",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement WebSocket Server and TwiML for Bidirectional Streaming",
+            "description": "Modify the Cloud Function to respond to the initial Twilio webhook with `<Connect><Stream>` TwiML and implement a WebSocket server to handle the subsequent connection from Twilio.",
+            "dependencies": [],
+            "details": "Update the HTTP-triggered function to generate TwiML that specifies the WebSocket endpoint of the function. Use a library like 'ws' in Node.js to create the WebSocket server. The server logic must handle 'connection', 'message', and 'close' events from the Twilio stream.",
+            "status": "pending",
+            "testStrategy": "Update the Twilio number's voice webhook to point to the function. Call the number and verify in Twilio and Cloud Function logs that a WebSocket connection is successfully established and a 'connected' message is received from Twilio."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Google STT for Real-Time Transcription",
+            "description": "Set up the Google Speech-to-Text client, process the inbound audio stream from the WebSocket, and stream it to the API to get real-time transcription results.",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Within the WebSocket 'message' handler, parse 'media' events. Decode the base64 mu-law audio payload. Initialize the Speech-to-Text v1 client with a streaming recognition configuration (encoding: 'MULAW', sampleRateHertz: 8000). Pipe the decoded audio to the STT client and handle the returned transcript data.",
+            "status": "pending",
+            "testStrategy": "During a live test call, speak a clear phrase (e.g., \"Hello, this is a test.\") and verify that the correct and complete transcript appears in the Cloud Function logs."
+          },
+          {
+            "id": 3,
+            "title": "Integrate Google TTS for Speech Synthesis",
+            "description": "Create a reusable module to interface with the Google Text-to-Speech API. This module will accept a string of text and return the synthesized audio data in the required format.",
+            "dependencies": [],
+            "details": "Initialize the Text-to-Speech v1 client. Create a function that takes a text string as input, constructs a synthesis request (specifying a suitable voice, audio encoding 'MULAW', and sample rate 8000), calls the `synthesizeSpeech` method, and returns the resulting audio content.",
+            "status": "pending",
+            "testStrategy": "Write a unit test that calls the synthesis function with a sample text like \"Hello world\". Verify that the function returns a non-empty audio buffer. Optionally, save the output to a file and play it to confirm correctness."
+          },
+          {
+            "id": 4,
+            "title": "Stream Synthesized TTS Audio to Twilio Outbound Stream",
+            "description": "Take the synthesized audio from the Text-to-Speech service, format it for Twilio's outbound stream, and send it over the WebSocket connection to be played to the caller.",
+            "dependencies": [
+              "5.1",
+              "5.3"
+            ],
+            "details": "After generating audio with the TTS module, base64 encode the raw audio data. Construct a JSON 'media' message containing the stream's `sid` and the base64 audio in the `payload` field. Send this JSON string over the active WebSocket connection to Twilio.",
+            "status": "pending",
+            "testStrategy": "In the Cloud Function, after receiving a transcript, immediately trigger a hardcoded TTS response (e.g., \"I hear you\"). During a live call, confirm that this audio response is played back to the caller after they speak."
+          },
+          {
+            "id": 5,
+            "title": "Orchestrate Bidirectional Audio Data Flow",
+            "description": "Connect the inbound transcription results to the outbound synthesis logic, creating a complete loop. For now, this can be a simple echo or a predefined response.",
+            "dependencies": [
+              "5.2",
+              "5.4"
+            ],
+            "details": "In the STT result handler, once a final transcript is received, pass this text to the TTS module. Take the resulting audio from the TTS module and pass it to the outbound streaming function. This wires the STT and TTS components together, pending integration with the Gemini AI logic (Task 6).",
+            "status": "pending",
+            "testStrategy": "Perform an end-to-end test by calling the Twilio number. Speak a sentence and verify that the system synthesizes and plays back a response based on the transcribed text (e.g., an echo of what was said)."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Backend: Integrate Gemini 2.5 Flash for Conversational AI",
+        "description": "Integrate the Gemini 2.5 Flash API into the Cloud Function to process transcribed text and generate intelligent, conversational responses.",
+        "details": "In the Cloud Function, after receiving a transcript from Speech-to-Text, send it to the Gemini API. Use a pre-defined prompt that instructs the AI to act as a professional call screener. The AI's text response will then be fed into the Text-to-Speech service.",
+        "testStrategy": "Write unit tests that mock the Gemini API call with sample transcripts and verify the generated responses are logical. Perform an end-to-end call test to have a short, scripted conversation with the AI and check for coherence.",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configure Gemini API Authentication and SDK",
+            "description": "Set up the Cloud Function environment to authenticate with the Gemini API. This involves installing the necessary SDK, configuring API keys or service account credentials, and initializing the client.",
+            "dependencies": [],
+            "details": "Add the Google AI SDK (e.g., `@google/generative-ai` for Node.js) to the project's `package.json`. Store the Gemini API key securely in a secret manager and configure the Cloud Function to access it. Initialize the Gemini client in the function's global scope to enable connection reuse.",
+            "status": "pending",
+            "testStrategy": "Deploy a test version of the function that attempts to initialize the client. Verify successful initialization by checking the function logs for any authentication errors."
+          },
+          {
+            "id": 2,
+            "title": "Develop the Call Screener System Prompt",
+            "description": "Create and refine the pre-defined system prompt that instructs the Gemini 2.5 Flash model on its role, objectives, and conversational style as a professional call screener.",
+            "dependencies": [],
+            "details": "The prompt must define the AI's persona (polite, professional, concise), its goal (identify the caller and purpose of the call), and constraints (e.g., do not engage in off-topic conversation). The prompt will be stored as a constant or configuration variable within the Cloud Function.",
+            "status": "pending",
+            "testStrategy": "Manually test the prompt in a separate environment like Google AI Studio with sample inputs to ensure it elicits the desired behavior and tone before integrating it into the function."
+          },
+          {
+            "id": 3,
+            "title": "Implement Gemini API Call Logic",
+            "description": "Write the core logic within the Cloud Function to take the transcribed text from the Speech-to-Text service, combine it with the system prompt, and make an API call to Gemini 2.5 Flash.",
+            "dependencies": [
+              "6.1",
+              "6.2"
+            ],
+            "details": "Create an asynchronous function that receives the transcript string. This function will construct the request payload for the Gemini API, including the system prompt and the user's utterance. It will then invoke the `generateContent` method of the initialized Gemini client.",
+            "status": "pending",
+            "testStrategy": "In a development environment, call the function with a hardcoded transcript string and log the raw response from the Gemini API to ensure the request is formatted correctly and a valid response is received."
+          },
+          {
+            "id": 4,
+            "title": "Process and Sanitize Gemini API Response",
+            "description": "Implement logic to parse the response from the Gemini API, extract the generated text content, handle potential errors, and sanitize the output before it is passed to the Text-to-Speech service.",
+            "dependencies": [
+              "6.3"
+            ],
+            "details": "Extract the text from the Gemini API's response object. Implement robust error handling for API failures, content filtering blocks, or empty responses. Sanitize the text to remove any artifacts (like markdown) that are not intended to be spoken by the Text-to-Speech service.",
+            "status": "pending",
+            "testStrategy": "Write a helper function for processing the response and test it with various sample raw API response objects (both valid and error states) to verify it extracts text and handles errors correctly."
+          },
+          {
+            "id": 5,
+            "title": "Create Unit Tests with Mocked Gemini API",
+            "description": "Develop unit tests for the Gemini integration logic, mocking the Gemini API client to simulate various responses and verify the Cloud Function's behavior without making live API calls.",
+            "dependencies": [
+              "6.4"
+            ],
+            "details": "Using a testing framework like Jest or Mocha, create test cases that invoke the main function logic with sample transcripts. Mock the Gemini SDK's `generateContent` method to return predefined successful responses, error objects, and safety-blocked responses. Assert that the function's output is correctly formatted or that errors are handled as expected.",
+            "status": "pending",
+            "testStrategy": "Run the test suite and ensure all tests pass. Verify that the tests cover successful conversation turns, API errors, and unexpected content from the AI."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Backend: Implement Call Log Persistence and Summary Generation",
+        "description": "At the end of a call, use Gemini to generate a summary, then save the complete call log document (transcript, summary, metadata) to Firestore.",
+        "details": "After the call disconnects, trigger a final Gemini API call with the full transcript to generate a concise summary. Construct the `CallLogDocument` object as specified in the PRD. Write this document to the 'call_logs' collection in Firestore, associating it with the correct `userId`.",
+        "testStrategy": "After a test call, query the Firestore database directly to verify the call log document was created with all required fields (callerId, transcript, aiSummary, etc.). Validate the format and content.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define CallLogDocument Firestore Data Model",
+            "description": "Specify the precise schema for the `CallLogDocument` to be stored in the 'call_logs' Firestore collection. This includes defining all fields such as userId, transcript, aiSummary, callStartTime, callEndTime, and callerId.",
+            "dependencies": [],
+            "details": "Create a formal data structure definition (e.g., a TypeScript interface) in the project's shared code. This schema must align with the PRD and will serve as the contract for writing and reading call log data.",
+            "status": "pending",
+            "testStrategy": "Review the defined schema against the parent task's requirements to ensure all necessary fields are included and correctly typed. Validate against any existing client-side data expectations."
+          },
+          {
+            "id": 2,
+            "title": "Implement Post-Call Trigger and Data Aggregation",
+            "description": "In the main Cloud Function, add logic to detect the call disconnection event. Upon this trigger, aggregate the complete call transcript and all relevant metadata (e.g., userId, callerId, timestamps) required for the log.",
+            "dependencies": [],
+            "details": "The trigger will likely be initiated by a Twilio status callback or by detecting the closure of the WebSocket audio stream. The function must gather the full transcript that has been accumulated during the call's duration.",
+            "status": "pending",
+            "testStrategy": "Simulate a call ending and check Cloud Function logs to verify the trigger fires correctly and the aggregated data object contains the complete, accurate transcript and metadata."
+          },
+          {
+            "id": 3,
+            "title": "Develop Gemini Summary Generation Service",
+            "description": "Create a reusable function that accepts a full call transcript, sends it to the Gemini API with a summarization prompt, and processes the response to extract the generated summary.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Engineer a specific prompt that instructs the Gemini model to generate a concise, actionable summary. The function will handle authentication with the Gemini API and parse the returned JSON to isolate the summary text.",
+            "status": "pending",
+            "testStrategy": "Write unit tests that provide sample transcripts to the function and mock the Gemini API call. Verify that the function correctly handles and extracts the summary from various mocked API responses."
+          },
+          {
+            "id": 4,
+            "title": "Implement Firestore Document Creation Logic",
+            "description": "Develop a function that takes the aggregated call data and the AI-generated summary, constructs the `CallLogDocument` object, and writes it to the 'call_logs' collection in Firestore using the Firebase Admin SDK.",
+            "dependencies": [
+              "7.1",
+              "7.3"
+            ],
+            "details": "This function will assemble the final object based on the schema defined in subtask 7.1. It will then perform the `add()` or `set()` operation on the 'call_logs' collection, ensuring the document is correctly associated with the `userId`.",
+            "status": "pending",
+            "testStrategy": "After executing a test call, query the Firestore database directly to confirm that the call log document was created. Verify all fields (transcript, aiSummary, userId, etc.) exist and contain the correct data."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Persistence Flow with Error Handling",
+            "description": "Orchestrate the end-to-end sequence within the post-call trigger: call the summary service, construct the document, and save it to Firestore. Implement robust error handling and logging for the entire workflow.",
+            "dependencies": [
+              "7.2",
+              "7.4"
+            ],
+            "details": "Wrap the external API call to Gemini and the database write operation in try/catch blocks. Log any failures to Cloud Logging. Implement a fallback strategy, such as saving the call log without a summary if the Gemini API call fails.",
+            "status": "pending",
+            "testStrategy": "Induce failures by providing an invalid API key for Gemini or misconfiguring Firestore permissions. Verify that the function catches these errors, logs them appropriately, and does not crash."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "iOS: Implement User Authentication Logic and Onboarding Flow",
+        "description": "Connect the authentication UI to Firebase Authentication services. Build the full onboarding flow, including permissions requests for Notifications and Contacts.",
+        "details": "Implement the logic for `Firebase.Auth` to handle user creation and sign-in for all providers. After successful sign-up, guide the user through a permissions walkthrough, clearly explaining why each permission is needed before requesting it via native iOS APIs.",
+        "testStrategy": "Test creating new accounts and logging in with all three methods (Email, Google, Apple). Test the permissions flow: deny, accept, and check app settings to confirm status. Verify user documents are created in Firestore upon sign-up.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Email/Password Authentication Logic",
+            "description": "Connect the email/password sign-in and sign-up UI views to Firebase.Auth. Implement the logic for user creation, sign-in, password reset, and error handling.",
+            "dependencies": [],
+            "details": "Create an authentication service or view model to handle calls to `Firebase.Auth`. Implement functions for `createUser(withEmail:password:)`, `signIn(withEmail:password:)`, and `sendPasswordReset(withEmail:)`. Handle common errors like weak password, email already in use, and incorrect credentials by displaying alerts to the user.",
+            "status": "pending",
+            "testStrategy": "Test creating a new account with a valid email/password. Test signing in with the new credentials. Test failure cases like invalid email format, weak password, and incorrect login details. Verify the password reset email is sent."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Google and Apple Social Sign-In",
+            "description": "Implement the logic for the 'Sign in with Google' and 'Sign in with Apple' buttons, connecting them to the respective Firebase authentication providers.",
+            "dependencies": [],
+            "details": "Configure the necessary project settings, URL schemes, and entitlements for both Google and Apple sign-in. Use the `GoogleSignIn` SDK and `AuthenticationServices` framework to get credentials and pass them to `Firebase.Auth` for sign-in. Ensure proper handling of the sign-in callbacks and errors.",
+            "status": "pending",
+            "testStrategy": "Test signing in and creating a new account with a Google account. Test signing in and creating a new account with an Apple ID. Verify that the user is created in the Firebase Auth console for both methods."
+          },
+          {
+            "id": 3,
+            "title": "Create Firestore User Document on First Sign-Up",
+            "description": "Upon a new user's successful sign-up from any provider, create a corresponding user document in the 'users' collection in Firestore.",
+            "dependencies": [
+              "8.1",
+              "8.2"
+            ],
+            "details": "Create a function that observes the authentication state or is called after a successful sign-up. When a new user is created, trigger a function to write a new document to the 'users' collection using the user's UID as the document ID. The document should store initial data like email, creation date, and a flag for onboarding completion.",
+            "status": "pending",
+            "testStrategy": "After creating a new user via email, Google, and Apple, verify in the Firestore console that a corresponding document is created in the 'users' collection with the correct UID and initial data."
+          },
+          {
+            "id": 4,
+            "title": "Build Permissions Pre-Prompt Walkthrough UI",
+            "description": "Create a new SwiftUI view that is presented after sign-up to guide the user through required permissions, explaining the rationale for each before the native prompt is shown.",
+            "dependencies": [
+              "8.3"
+            ],
+            "details": "Design and implement a view that is presented modally after the first successful sign-up. This view should have separate sections for Notifications and Contacts, each with explanatory text and a 'Grant Access' button. This is a 'pre-permission' prompt UI to improve acceptance rates.",
+            "status": "pending",
+            "testStrategy": "Trigger the onboarding flow after a new user signs up. Verify the permissions walkthrough UI is displayed correctly, is responsive, and clearly explains the need for each permission."
+          },
+          {
+            "id": 5,
+            "title": "Implement Native Permissions Request Logic",
+            "description": "Connect the 'Grant Access' buttons from the walkthrough UI to the native iOS APIs for requesting Notification and Contacts permissions.",
+            "dependencies": [
+              "8.4"
+            ],
+            "details": "Use the `UserNotifications` framework to request authorization for notifications. Use the `Contacts` framework (`CNContactStore`) to request authorization for contacts access. Handle the different authorization statuses (authorized, denied, notDetermined) and dismiss the walkthrough or guide the user to settings upon completion.",
+            "status": "pending",
+            "testStrategy": "Tap the 'Grant Access' button for Notifications and verify the native iOS prompt appears; test both accepting and denying. Repeat for Contacts. After denying, verify the app provides a way for the user to change the setting later. Check the app's permission status in the iOS Settings app."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "iOS: Implement One-Touch Call Forwarding Setup",
+        "description": "Create the UI for guiding users through Conditional Call Forwarding setup, providing carrier-specific MMI codes that can be copied or dialed directly.",
+        "details": "Build a view that displays instructions for call forwarding. Include a database or configuration file of MMI codes for major carriers. Use `UIPasteboard` to allow copying the code and `UIApplication.shared.open(URL(string: \"tel://...\"))` to allow one-tap dialing of the activation code.",
+        "testStrategy": "Test on physical devices with SIM cards from different carriers. Verify that the copy and dial functionalities work as expected. Manually confirm that call forwarding is successfully activated on the device.",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Research Carrier MMI Codes and Design Data Model",
+            "description": "Research and compile a list of Conditional Call Forwarding (CCF) MMI activation and deactivation codes for major mobile carriers. Design a data structure, such as a JSON file or Swift dictionary, to store this information, mapping carriers to their respective codes.",
+            "dependencies": [],
+            "details": "The research should cover major carriers in target markets (e.g., US, UK, EU). The data model must include the carrier name, an activation code template (e.g., `*004*<PHONE_NUMBER>#`), and a deactivation code (e.g., `##004#`). This data will be bundled with the app.",
+            "status": "pending",
+            "testStrategy": "Validate the compiled list of codes against official carrier documentation for accuracy. Create a unit test to parse the data file (e.g., JSON) and verify the model objects are created correctly."
+          },
+          {
+            "id": 2,
+            "title": "Build the Call Forwarding Setup SwiftUI View",
+            "description": "Create the static SwiftUI view for the call forwarding setup screen. This view will display instructional text, a placeholder for the carrier-specific code, and buttons for 'Copy Code' and 'Dial Now'.",
+            "dependencies": [],
+            "details": "Focus on the UI layout and presentation using SwiftUI. The view should clearly explain the purpose of the MMI code. Use placeholder data for the code and instructions initially. Ensure the layout is responsive to different screen sizes.",
+            "status": "pending",
+            "testStrategy": "Run the app in the iOS simulator on various device sizes (e.g., iPhone SE, iPhone 14 Pro Max) to verify the UI renders correctly and is not truncated. Write a UI test to confirm the presence of key elements like the instruction text and the two action buttons."
+          },
+          {
+            "id": 3,
+            "title": "Implement Carrier Detection and Dynamic Code Generation",
+            "description": "Integrate the CoreTelephony framework to detect the user's current mobile carrier. Based on the detected carrier, fetch the appropriate MMI code template from the data model and dynamically generate the full activation string.",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Use `CTTelephonyNetworkInfo` and `CTCarrier` to get the `carrierName`. Implement logic to match this name against the MMI code database. Create a service or view model that takes the user's provisioned phone number and returns the complete, dialable MMI string.",
+            "status": "pending",
+            "testStrategy": "Test on a physical device with a SIM card from a known carrier. Log the detected carrier name and the generated MMI code to ensure they are correct. Test the fallback logic for when a carrier is not found in the database."
+          },
+          {
+            "id": 4,
+            "title": "Implement 'Copy to Clipboard' and 'One-Tap Dial' Actions",
+            "description": "Wire the 'Copy Code' and 'Dial Now' buttons to their respective system actions. The copy button will use `UIPasteboard` and the dial button will use `UIApplication.shared.open` with a 'tel://' URL.",
+            "dependencies": [
+              "9.2",
+              "9.3"
+            ],
+            "details": "For the copy action, use `UIPasteboard.general.string` to place the generated MMI code onto the clipboard. For the dial action, construct a URL, ensuring special characters like '#' are properly handled (they are typically allowed in 'tel' URLs without encoding), and call `UIApplication.shared.open()`.",
+            "status": "pending",
+            "testStrategy": "On a physical device, tap the 'Copy' button and verify the code can be pasted into another app. Tap the 'Dial' button and confirm the native Phone app opens with the correct MMI code pre-filled and ready to be called."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Components and Handle Edge Cases",
+            "description": "Integrate the carrier detection, dynamic code generation, and UI actions into the final view. Implement graceful handling for edge cases, such as when no SIM card is present or the user's carrier is not in the database.",
+            "dependencies": [
+              "9.2",
+              "9.3",
+              "9.4"
+            ],
+            "details": "The SwiftUI view should now be connected to a view model that provides the dynamic MMI code. If no carrier is detected (e.g., no SIM, airplane mode), the UI should display an informative message. If the carrier is not in the database, provide a fallback message guiding the user to find the code manually.",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end testing on a physical device with a supported carrier SIM. Test on a device with an unsupported carrier SIM to verify the fallback UI. Test in the simulator or on a device in airplane mode to verify the 'no SIM/service' state is handled correctly."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "iOS: Develop Real-Time Call Log UI",
+        "description": "Build the main call log screen that listens for real-time updates from Firestore and displays a list of screened calls with summaries.",
+        "details": "Create a SwiftUI list view that uses a Firestore real-time listener (`addSnapshotListener`) to observe the user's 'call_logs' collection. Each row should display the caller ID, timestamp, and AI summary. Tapping a row should navigate to a detail view showing the full transcript.",
+        "testStrategy": "While the app is open, trigger a screened call via the backend. Verify the new call log appears in the UI instantly without a manual refresh. Test tapping a log to see the detail view.",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define CallLog Data Model and ViewModel",
+            "description": "Create the Swift data model that maps to a Firestore 'call_logs' document and set up the associated ViewModel for UI state management.",
+            "dependencies": [],
+            "details": "Define a `CallLog` struct conforming to `Codable` and `Identifiable` with properties for caller ID, timestamp, AI summary, and full transcript. Create a `CallLogViewModel` as an `ObservableObject` containing a `@Published` array of `CallLog` items to hold the data for the view.",
+            "status": "pending",
+            "testStrategy": "Verify that a sample JSON object representing a Firestore document can be successfully decoded into the `CallLog` struct."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Firestore Real-Time Listener",
+            "description": "Implement the logic within the ViewModel to connect to Firestore and listen for live updates to the user's call log collection.",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "In the `CallLogViewModel`, create a function to attach a Firestore snapshot listener (`addSnapshotListener`) to the 'call_logs' collection for the authenticated user. The listener should handle decoding documents into `CallLog` objects, updating the `@Published` array, and managing error states. Order the query by timestamp in descending order.",
+            "status": "pending",
+            "testStrategy": "With the app running, manually add or modify a document in the user's 'call_logs' collection in the Firebase console. Verify the ViewModel's data array updates automatically and logs the changes."
+          },
+          {
+            "id": 3,
+            "title": "Build Call Log Row and List View UI",
+            "description": "Develop the main SwiftUI list view that displays the real-time data from the ViewModel.",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Create a `CallLogListView` that observes the `CallLogViewModel`. Use a `List` to iterate over the call logs. Design a reusable `CallLogRowView` that takes a single `CallLog` object and displays the caller ID, a user-friendly formatted timestamp (e.g., 'Today, 5:32 PM'), and the AI summary. Focus on a clean and readable layout.",
+            "status": "pending",
+            "testStrategy": "Run the app and populate the ViewModel with mock `CallLog` data. Verify the list renders correctly and each row displays the expected information. Check layout on different device sizes."
+          },
+          {
+            "id": 4,
+            "title": "Create Call Transcript Detail View",
+            "description": "Build the destination screen that is shown when a user taps on a call log entry, displaying the full transcript.",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Create a new SwiftUI view named `CallDetailView`. This view will accept a `CallLog` object as a parameter. It should display the caller ID, the full timestamp, and the full call transcript in a scrollable text view. Ensure the text is formatted for easy reading.",
+            "status": "pending",
+            "testStrategy": "Instantiate the `CallDetailView` in a SwiftUI preview with a mock `CallLog` object containing a long transcript. Verify the view renders correctly and the transcript is scrollable."
+          },
+          {
+            "id": 5,
+            "title": "Implement Navigation Between List and Detail",
+            "description": "Connect the main call log list to the detail view, enabling users to tap a row to see the full transcript.",
+            "dependencies": [
+              "10.3",
+              "10.4"
+            ],
+            "details": "Wrap the `CallLogListView` in a `NavigationView`. Modify the `CallLogRowView` or the list's `ForEach` loop to embed each row within a `NavigationLink`. The `NavigationLink`'s destination should be the `CallDetailView`, passing the selected `CallLog` item to it.",
+            "status": "pending",
+            "testStrategy": "Run the app with the real-time listener active. Tap on a row in the list and verify that it navigates to the detail view and displays the correct transcript for the tapped item. Test the back navigation."
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Backend/iOS: Implement Push Notifications via FCM",
+        "description": "Configure Firebase Cloud Messaging. The backend will trigger a push notification upon call completion, and the iOS app will receive and display it.",
+        "details": "Backend: In the Cloud Function, after saving the call log, use the Firebase Admin SDK to send a push notification via FCM to the user's device token. Include the AI summary in the payload. iOS: Configure the app to receive FCM notifications. Handle incoming notifications and display them to the user.",
+        "testStrategy": "Trigger a screened call and verify that a push notification is received on the test device within 5 seconds of the call ending. Test when the app is in the foreground, background, and terminated.",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "iOS: Configure Firebase Project and APNs for Push Notifications",
+            "description": "Set up the Apple Push Notification service (APNs) key in the Apple Developer portal, upload it to the Firebase project, and configure the iOS app with the necessary SDKs and capabilities.",
+            "dependencies": [],
+            "details": "Create an APNs Auth Key via the Apple Developer portal. In the Firebase Console, navigate to Project Settings > Cloud Messaging and upload the APNs key. Add the `Firebase/Messaging` SDK to the iOS project using Swift Package Manager or CocoaPods. In Xcode, add the 'Push Notifications' and 'Background Modes (Remote notifications)' capabilities. Add the downloaded `GoogleService-Info.plist` file to the app target.",
+            "status": "pending",
+            "testStrategy": "Verify the project builds successfully after adding the SDK. Confirm that the app does not crash on launch due to misconfiguration of the Firebase plist file."
+          },
+          {
+            "id": 2,
+            "title": "iOS: Implement User Permission Request and FCM Token Handling",
+            "description": "Implement the logic to request user permission for push notifications. Upon approval, retrieve the FCM registration token and create a mechanism to send it to the backend for storage.",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "In the `AppDelegate`, use `UNUserNotificationCenter.current().requestAuthorization` to prompt the user for notification permissions. Implement the `MessagingDelegate` protocol and its `messaging(_:didReceiveRegistrationToken:)` method to receive the FCM token. Create a Firestore service class that updates the current user's document with the new FCM token.",
+            "status": "pending",
+            "testStrategy": "On first launch, verify the permission prompt is displayed. After granting permission, check Firestore to confirm the user's document contains a valid `fcmToken` string."
+          },
+          {
+            "id": 3,
+            "title": "Backend: Enhance Cloud Function to Send Notification on Call Completion",
+            "description": "Modify the call completion Cloud Function to use the Firebase Admin SDK to send a push notification. The function will retrieve the user's device token and send a payload containing the call summary.",
+            "dependencies": [],
+            "details": "In the Cloud Function triggered after a call ends (dependent on Task 7), after the call log is written to Firestore, retrieve the `userId` associated with the call. Use this `userId` to fetch the user's document and their stored `fcmToken`. Construct an FCM message payload with a title, body, and the AI summary in the `data` field. Use `admin.messaging().send()` to dispatch the notification.",
+            "status": "pending",
+            "testStrategy": "Write a unit test for the Cloud Function that mocks the Firestore read and verifies that `admin.messaging().send()` is called with the correct token and payload. Check function logs after a real call for successful execution."
+          },
+          {
+            "id": 4,
+            "title": "iOS: Implement Notification Reception and Display Logic",
+            "description": "Implement the delegate methods required to receive and process incoming remote notifications, whether the app is in the foreground, background, or terminated.",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "Conform to `UNUserNotificationCenterDelegate`. Implement `userNotificationCenter(_:willPresent:withCompletionHandler:)` to handle notifications that arrive while the app is in the foreground (e.g., show a custom in-app alert). Implement `userNotificationCenter(_:didReceive:withCompletionHandler:)` to handle user interactions with the notification, such as tapping on it to navigate to a specific screen. Parse the `userInfo` dictionary to extract the AI summary from the data payload.",
+            "status": "pending",
+            "testStrategy": "Use a tool like the Firebase Console or a test script to send a sample notification to a test device. Verify the notification is displayed correctly and that the app responds appropriately when the notification is tapped."
+          },
+          {
+            "id": 5,
+            "title": "E2E: Test Full Notification Flow Across All App States",
+            "description": "Conduct end-to-end testing of the entire push notification flow, from call completion to notification display on the iOS device, ensuring it works correctly when the app is in the foreground, background, and terminated.",
+            "dependencies": [
+              "11.2",
+              "11.3",
+              "11.4"
+            ],
+            "details": "Using a physical test device, initiate and complete a screened call. Verify that a push notification is received within 5 seconds of the call ending. Repeat this test for three scenarios: 1) App is open and in the foreground. 2) App is in the background. 3) App is terminated (swiped away). In all cases, confirm the notification content is correct and includes the AI summary.",
+            "status": "pending",
+            "testStrategy": "Execute the detailed test plan. Document the time from call end to notification receipt. Verify the payload content on the device. Check Cloud Function logs for any errors during the send process."
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "iOS: Implement Service Toggle and Home Screen Widget",
+        "description": "Create an in-app toggle and a Home Screen widget (using WidgetKit) to enable/disable the call screening service.",
+        "details": "In-app: Add a toggle switch that updates the `isScreeningActive` boolean in the user's Firestore document. Backend: The Cloud Function must check this flag before initiating screening. Widget: Create a simple widget that displays the service status and provides a deep link to toggle it in the app.",
+        "testStrategy": "Toggle the service off in the app; call the user's number and confirm it rings normally (is not forwarded). Toggle it on and confirm screening is active. Test the widget's display and deep link functionality.",
+        "priority": "low",
+        "dependencies": [
+          3,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "iOS: Create In-App Service Toggle UI",
+            "description": "Implement the user interface for the service toggle switch within a settings or main screen of the iOS app using SwiftUI.",
+            "dependencies": [],
+            "details": "Add a SwiftUI `Toggle` view to an appropriate settings screen. The view should be bound to a `@State` or `@Published` property in a view model. At this stage, the toggle's state can be managed locally without connecting to Firebase.",
+            "status": "pending",
+            "testStrategy": "Run the app in the simulator and verify the toggle switch renders correctly. Confirm that tapping the switch changes its visual state (on/off)."
+          },
+          {
+            "id": 2,
+            "title": "iOS: Connect Toggle State to Firestore",
+            "description": "Implement the logic to read and write the `isScreeningActive` boolean to the current user's document in Firestore when the in-app toggle is used.",
+            "dependencies": [
+              "12.1"
+            ],
+            "details": "Create or update a Firebase service/repository class. On view appear, fetch the current `isScreeningActive` value from the `users/{userId}` document to set the toggle's initial state. When the toggle's value changes, trigger a function to write the new boolean value back to the same Firestore document.",
+            "status": "pending",
+            "testStrategy": "Toggle the switch in the app. Use the Firebase Console to verify that the `isScreeningActive` field in the user's document updates to `true` and `false` accordingly. Relaunch the app to confirm the toggle's state is correctly loaded from Firestore."
+          },
+          {
+            "id": 3,
+            "title": "Backend: Update Cloud Function to Check `isScreeningActive` Flag",
+            "description": "Modify the main Twilio webhook Cloud Function to check the `isScreeningActive` flag in Firestore before initiating the call screening process.",
+            "dependencies": [
+              "12.2"
+            ],
+            "details": "In the HTTP-triggered Cloud Function, before generating screening TwiML, fetch the user's document from Firestore. Read the `isScreeningActive` flag. If the flag is `false` or does not exist, the function should respond with TwiML that bypasses screening (e.g., using `<Dial>` to forward the call or `<Hangup>`).",
+            "status": "pending",
+            "testStrategy": "Set `isScreeningActive` to false via the app. Call the user's Twilio number and confirm the call is not screened (it rings the user's real phone). Set the flag to true and confirm the screening process is initiated as expected."
+          },
+          {
+            "id": 4,
+            "title": "WidgetKit: Implement Status View and Timeline Provider",
+            "description": "Create a Home Screen widget using WidgetKit that displays the current call screening service status (e.g., 'Active' or 'Inactive').",
+            "dependencies": [
+              "12.2"
+            ],
+            "details": "Add a new Widget Extension target to the Xcode project. Implement a `TimelineProvider` to fetch the `isScreeningActive` status from the user's Firestore document. Design a simple SwiftUI view for the widget that conditionally displays text or an icon based on the fetched status. Configure App Groups to share data/credentials between the app and the widget.",
+            "status": "pending",
+            "testStrategy": "Add the widget to the Home Screen. Toggle the service in the app and verify the widget's display updates to reflect the new status after a short period (respecting the timeline refresh policy)."
+          },
+          {
+            "id": 5,
+            "title": "WidgetKit: Add Deep Link to Toggle Screen",
+            "description": "Configure the widget to function as a button that, when tapped, opens the app and navigates the user directly to the screen containing the service toggle.",
+            "dependencies": [
+              "12.1",
+              "12.4"
+            ],
+            "details": "Define a custom URL scheme for the app (e.g., `my-app://settings`). In the widget's SwiftUI view, apply the `.widgetURL()` modifier with the appropriate URL. In the main app's SwiftUI `App` struct or `SceneDelegate`, implement the `.onOpenURL()` modifier to handle the incoming deep link and navigate to the settings view.",
+            "status": "pending",
+            "testStrategy": "With the app closed, tap the widget on the Home Screen. Verify that the app launches and displays the settings screen with the service toggle."
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Production: Implement Comprehensive Error Handling",
+        "description": "Add robust error handling to both the backend and iOS app for issues like API failures, dropped calls, and network problems.",
+        "details": "Backend: Implement try-catch blocks for all API calls (Twilio, Gemini, Google Speech). Add logic to handle silent callers or dropped connections gracefully. Log all errors to Google Cloud Logging. iOS: Handle network errors when communicating with Firebase. Display user-friendly error messages.",
+        "testStrategy": "Use mock servers or intentionally break API keys to simulate failures and verify the system handles them gracefully. Test edge cases like a caller hanging up immediately. Review logs to ensure errors are captured correctly.",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          10
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Backend: Implement Resilient API Call Handling for Third-Party Services",
+            "description": "Wrap all external API calls within the Cloud Function (to Twilio, Gemini, Google Speech) in try-catch blocks to prevent crashes from API failures, timeouts, or invalid responses.",
+            "dependencies": [],
+            "details": "For each external service call, implement logic to catch exceptions. On failure, the system should log the detailed error to Google Cloud Logging and decide on a graceful fallback, such as playing a generic error message to the caller or terminating the call cleanly.",
+            "status": "pending",
+            "testStrategy": "Use mock servers or temporarily invalidate API keys for Twilio, Gemini, and Google Speech to trigger failure conditions. Verify that the function does not crash and that a specific error is logged in Google Cloud Logging."
+          },
+          {
+            "id": 2,
+            "title": "Backend: Gracefully Handle Dropped Connections and Caller Silence",
+            "description": "Implement logic within the WebSocket handler to gracefully manage unexpected call terminations (dropped calls) and periods of prolonged silence from the caller.",
+            "dependencies": [],
+            "details": "Monitor the WebSocket connection state to detect when a caller hangs up abruptly. Implement a timeout mechanism that triggers if no audio is received from the caller for a specified duration (e.g., 15 seconds). In both cases, log the event and ensure the Cloud Function and associated resources are terminated cleanly.",
+            "status": "pending",
+            "testStrategy": "Initiate a test call and hang up mid-conversation to simulate a dropped call. Separately, initiate a call and remain silent. Verify that the system logs the correct event and terminates the session without errors."
+          },
+          {
+            "id": 3,
+            "title": "Backend: Standardize and Centralize Error Logging Structure",
+            "description": "Establish a consistent, structured JSON format for all error logs sent to Google Cloud Logging to facilitate easier debugging, monitoring, and alerting.",
+            "dependencies": [
+              "13.1",
+              "13.2"
+            ],
+            "details": "Define a JSON payload structure for logs that includes a unique error code, error message, service name (e.g., 'Gemini', 'Twilio'), call SID, and relevant stack trace. Refactor the error handling logic from the other backend subtasks to use this centralized logging utility.",
+            "status": "pending",
+            "testStrategy": "After implementing the new logging structure, trigger various errors (API failure, dropped call). Query Google Cloud Logging to verify that all error logs adhere to the new, standardized JSON format and contain the correct contextual information."
+          },
+          {
+            "id": 4,
+            "title": "iOS: Implement Error Catching for Firebase SDK Operations",
+            "description": "Add robust error handling to all interactions with Firebase services, including Firestore and Firebase Authentication, to manage network failures and backend rule rejections.",
+            "dependencies": [],
+            "details": "Wrap all Firebase calls (e.g., fetching call logs, user sign-in, sign-up) in `do-catch` blocks when using Swift's `async/await` or check the `error` object in completion handlers. This includes handling scenarios like loss of internet connectivity, permission denied errors from Firestore rules, and authentication failures.",
+            "status": "pending",
+            "testStrategy": "Turn on Airplane Mode on the test device to simulate network failure and attempt a Firebase operation. Modify Firestore security rules to temporarily deny access and verify the app catches the 'permission-denied' error."
+          },
+          {
+            "id": 5,
+            "title": "iOS: Design and Implement User-Friendly Error Message Display",
+            "description": "Create a system for presenting clear, non-technical error messages to the user within the iOS app in response to caught errors.",
+            "dependencies": [
+              "13.4"
+            ],
+            "details": "Create reusable SwiftUI views (e.g., non-intrusive alerts or banners) to display errors. Map technical errors caught in subtask 13.4 to user-friendly messages (e.g., map a network timeout to 'Could not connect. Please check your internet connection and try again.').",
+            "status": "pending",
+            "testStrategy": "Trigger a known error (e.g., by simulating a network failure). Verify that the app displays the corresponding user-friendly message in the correct UI component, rather than crashing or showing a technical error code."
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Production: Performance Optimization and Latency Reduction",
+        "description": "Optimize the entire call screening pipeline to meet the <1.5s AI response latency requirement and reduce Cloud Function cold starts.",
+        "details": "Analyze the P95 and P99 latency for the AI response loop. Configure Cloud Functions with a minimum number of instances to mitigate cold starts. Investigate using streaming responses from the Gemini API if available. Optimize TwiML and API call payloads.",
+        "testStrategy": "Use Google Cloud Trace and Logging to measure the duration of each step in the process (transcription, AI processing, synthesis). Conduct a series of test calls to measure end-to-end conversational latency and identify bottlenecks.",
+        "priority": "low",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Establish Baseline Latency Metrics",
+            "description": "Instrument the call screening pipeline with detailed tracing to measure and document the current P95 and P99 latency for the end-to-end AI response loop and its individual components (transcription, AI processing, synthesis).",
+            "dependencies": [],
+            "details": "Utilize Google Cloud Trace to create custom spans for each major step in the AI response process. Conduct a series of at least 50 test calls to gather a statistically significant dataset. Document the baseline performance figures in a shared report to serve as a benchmark for all subsequent optimizations.",
+            "status": "pending",
+            "testStrategy": "Verify that detailed latency metrics for each component are correctly captured in Google Cloud Trace for every test call. Analyze the collected data to confirm the baseline P95 and P99 values are established."
+          },
+          {
+            "id": 2,
+            "title": "Configure Cloud Function Minimum Instances to Reduce Cold Starts",
+            "description": "Mitigate latency caused by Cloud Function cold starts by configuring a minimum number of provisioned instances for the primary call handling function.",
+            "dependencies": [
+              "14.1"
+            ],
+            "details": "Based on the baseline analysis and expected call volume, determine an appropriate value for the `min-instances` setting in the Cloud Function configuration. Deploy the updated function and monitor the cost implications of keeping instances warm.",
+            "status": "pending",
+            "testStrategy": "After deployment, conduct a series of test calls, particularly after a period of inactivity. Compare the function's initial response times against the baseline data from subtask 14.1 to confirm a significant reduction in cold start latency."
+          },
+          {
+            "id": 3,
+            "title": "Optimize API Payloads and TwiML",
+            "description": "Review and minimize the data payloads for all external API calls (Twilio, Gemini, Google Speech-to-Text) and the generated TwiML to reduce data transfer and processing overhead.",
+            "dependencies": [
+              "14.1"
+            ],
+            "details": "Analyze the TwiML being generated and remove any non-essential attributes or verbs. For the Gemini API call, ensure only the necessary conversation history and context are sent. For Google Speech-to-Text, fine-tune the recognition configuration for speed.",
+            "status": "pending",
+            "testStrategy": "Use logging to inspect the request and response bodies before and after optimization to verify size reduction. Re-run component-level latency tests and compare timings with the baseline to measure improvement."
+          },
+          {
+            "id": 4,
+            "title": "Investigate and Implement Gemini API Streaming",
+            "description": "Research and implement a streaming-based approach for the AI response, allowing audio playback to begin before the full Gemini response is generated, thus reducing perceived latency.",
+            "dependencies": [
+              "14.1"
+            ],
+            "details": "Confirm streaming response support in the Gemini API documentation. If available, refactor the Cloud Function to handle the streaming data. This will likely involve using WebSockets via Twilio's `<Connect><Stream>` TwiML verb to pipe the synthesized audio directly to the caller in real-time as it's generated.",
+            "status": "pending",
+            "testStrategy": "In a test call, verify that audio playback starts almost immediately after the AI begins generating its response. Measure the 'time to first audio byte' and compare the perceived conversational latency with the non-streaming baseline."
+          },
+          {
+            "id": 5,
+            "title": "Final Performance Validation and Reporting",
+            "description": "Conduct a final, comprehensive performance test of the fully optimized pipeline to validate that the <1.5s P95 AI response latency requirement has been successfully met.",
+            "dependencies": [
+              "14.2",
+              "14.3",
+              "14.4"
+            ],
+            "details": "Execute the same comprehensive test suite used for the initial baseline (subtask 14.1) on the fully optimized system. Gather and analyze the new P95 and P99 latency data. Create a final report comparing the results against the baseline and the <1.5s target, documenting the improvements.",
+            "status": "pending",
+            "testStrategy": "Run a load test simulating at least 50 concurrent calls to measure performance under pressure. Analyze the resulting Google Cloud Trace data to formally confirm that the P95 end-to-end AI response latency is below the 1.5s threshold."
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Production: Security Hardening and Load Testing",
+        "description": "Finalize security rules, protect API keys, implement rate limiting, and perform load testing to ensure scalability.",
+        "details": "Review and finalize all Firestore security rules for production. Ensure all API keys are stored securely in Google Secret Manager and accessed via IAM roles. Implement rate limiting on the Cloud Function endpoint to prevent abuse. Use a load testing tool to simulate high call volume and monitor system performance.",
+        "testStrategy": "Perform penetration testing on the app and backend. Run a load test simulating 100 concurrent calls and verify that the system remains stable and responsive. Verify that unauthenticated requests to Firestore and Cloud Functions are rejected.",
+        "priority": "low",
+        "dependencies": [
+          13,
+          14
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Finalize and Deploy Production Firestore Security Rules",
+            "description": "Review, tighten, and deploy Firestore security rules to ensure only authenticated and authorized users can access their own data and that no public write access is allowed.",
+            "dependencies": [],
+            "details": "Implement rules that enforce per-user data access (e.g., `allow read, write: if request.auth.uid == resource.data.userId;`). Specifically target the user collection and any related sub-collections. Ensure no collections are publicly writable. Lock down access to any sensitive configuration data stored in Firestore.",
+            "status": "pending",
+            "testStrategy": "Use the Firestore Rules Emulator to run a suite of unit tests verifying both allowed and denied cases for authenticated and unauthenticated users. Manually attempt cross-user data access to confirm rejection."
+          },
+          {
+            "id": 2,
+            "title": "Migrate API Keys to Google Secret Manager and Configure IAM",
+            "description": "Move all third-party API keys (Twilio, Gemini) and other secrets from environment variables or code into Google Secret Manager to enhance security.",
+            "dependencies": [],
+            "details": "Create new secrets in Google Secret Manager for each API key. Grant the Cloud Function's service account the 'Secret Manager Secret Accessor' IAM role. Update the function's deployment script and runtime code to fetch secrets from Secret Manager instead of environment variables.",
+            "status": "pending",
+            "testStrategy": "Deploy the updated Cloud Function. Trigger the function and verify it can successfully fetch the keys and make authenticated API calls to Twilio and Gemini. Check Google Cloud logs for any permission-denied errors related to Secret Manager."
+          },
+          {
+            "id": 3,
+            "title": "Implement Rate Limiting on the Cloud Function Endpoint",
+            "description": "Add rate-limiting logic to the main Cloud Function HTTP endpoint to prevent abuse, brute-force attacks, and excessive costs.",
+            "dependencies": [],
+            "details": "Implement an IP-based or user-ID-based rate limiting strategy. A possible approach is using Firestore or Realtime Database to track request timestamps for each client. If a client exceeds a defined threshold (e.g., 60 requests per minute), the function should immediately respond with an HTTP 429 'Too Many Requests' status code.",
+            "status": "pending",
+            "testStrategy": "Develop a script to send a burst of requests from a single IP address. Verify that after the defined limit is reached, subsequent requests receive a 429 error. Confirm that requests from a different IP are still processed normally."
+          },
+          {
+            "id": 4,
+            "title": "Configure and Execute Scalability Load Test",
+            "description": "Use a load testing tool to simulate 100 concurrent calls to the Cloud Function endpoint to validate system performance, stability, and scalability under high traffic.",
+            "dependencies": [
+              "15.2",
+              "15.3"
+            ],
+            "details": "Select a load testing tool (e.g., k6, Artillery, JMeter). Develop a test script that accurately mimics the webhook request from Twilio. Configure the test to ramp up to 100 concurrent virtual users over a short period and sustain the load. The test should target the deployed function which uses Secret Manager and has rate limiting enabled (the test may require whitelisting test IPs).",
+            "status": "pending",
+            "testStrategy": "During the test, monitor key metrics in Google Cloud Monitoring, including Cloud Function P95/P99 execution latency, error rates, and instance count. Analyze the final report from the load testing tool for throughput and response times."
+          },
+          {
+            "id": 5,
+            "title": "Analyze Load Test Results and Conduct Final Security Audit",
+            "description": "Analyze the performance metrics from the load test to identify bottlenecks and perform a final security audit, including verification of access controls.",
+            "dependencies": [
+              "15.1",
+              "15.4"
+            ],
+            "details": "Review the load test report to ensure performance targets (e.g., latency) are met and that the system remained stable without crashes or a significant increase in errors. Conduct a security audit by attempting unauthorized actions, such as unauthenticated requests to the Cloud Function and cross-user data manipulation in Firestore, to verify security rules and endpoint protection are effective.",
+            "status": "pending",
+            "testStrategy": "Confirm that P99 latency under load is within acceptable limits as defined in Task 14. Use tools like cURL or Postman to send unauthenticated/unauthorized requests and verify they are rejected with appropriate 401/403 error codes. Document findings from both the performance analysis and security audit."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-04T15:30:49.374Z",
+      "updated": "2025-09-04T15:51:19.702Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

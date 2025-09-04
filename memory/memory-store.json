@@ -1,0 +1,16 @@
+{
+  "default": [
+    {
+      "key": "swarm/objective",
+      "value": "Build Project Friday iOS call screening app",
+      "namespace": "default",
+      "timestamp": 1757002422642
+    },
+    {
+      "key": "swarm/config",
+      "value": "{\"topology\":\"mesh\",\"maxAgents\":5}",
+      "namespace": "default",
+      "timestamp": 1757002427975
+    }
+  ]
+}

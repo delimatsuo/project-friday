@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "default": "project-friday-v1",
+    "dev": "project-friday-v1-dev",
+    "staging": "project-friday-v1-staging",
+    "production": "project-friday-v1"
+  },
+  "targets": {},
+  "etags": {}
+}

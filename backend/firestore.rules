@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.userId;
+    }
+    
+    function isValidUser(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function hasValidUserData() {
+      return request.resource.data.keys().hasAll(['userId', 'email', 'displayName', 'createdAt', 'updatedAt']) &&
+             request.resource.data.userId is string &&
+             request.resource.data.email is string &&
+             request.resource.data.displayName is string &&
+             request.resource.data.createdAt is timestamp &&
+             request.resource.data.updatedAt is timestamp;
+    }
+    
+    function hasValidCallLogData() {
+      return request.resource.data.keys().hasAll(['userId', 'callType', 'duration', 'summary', 'createdAt', 'updatedAt']) &&
+             request.resource.data.userId is string &&
+             request.resource.data.callType is string &&
+             request.resource.data.duration is number &&
+             request.resource.data.summary is string &&
+             request.resource.data.createdAt is timestamp &&
+             request.resource.data.updatedAt is timestamp &&
+             request.resource.data.duration >= 0;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow read and write only to the authenticated user's own document
+      allow read, write: if isAuthenticated() && 
+                           isValidUser(userId) && 
+                           (resource == null || isOwner(resource));
+      
+      // Validate user data structure on create/update
+      allow create: if isAuthenticated() && 
+                      isValidUser(userId) && 
+                      hasValidUserData() &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+                      isValidUser(userId) && 
+                      hasValidUserData() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId;
+    }
+    
+    // Call logs collection rules
+    match /call_logs/{callLogId} {
+      // Allow read and write only to documents owned by the authenticated user
+      allow read, write: if isAuthenticated() && 
+                           (resource == null || isOwner(resource));
+      
+      // Validate call log data structure on create/update
+      allow create: if isAuthenticated() && 
+                      hasValidCallLogData() &&
+                      request.resource.data.userId == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+                      hasValidCallLogData() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId;
+      
+      // Allow listing call logs for the authenticated user
+      allow list: if isAuthenticated();
+    }
+    
+    // Subcollections within call_logs
+    match /call_logs/{callLogId}/transcripts/{transcriptId} {
+      allow read, write: if isAuthenticated() && 
+                           get(/databases/$(database)/documents/call_logs/$(callLogId)).data.userId == request.auth.uid;
+    }
+    
+    match /call_logs/{callLogId}/recordings/{recordingId} {
+      allow read, write: if isAuthenticated() && 
+                           get(/databases/$(database)/documents/call_logs/$(callLogId)).data.userId == request.auth.uid;
+    }
+    
+    // Admin-only collections (if needed in the future)
+    match /admin/{document=**} {
+      allow read, write: if false; // No access for now
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

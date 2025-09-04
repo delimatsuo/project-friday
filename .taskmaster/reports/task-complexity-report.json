@@ -1,0 +1,133 @@
+{
+	"meta": {
+		"generatedAt": "2025-09-04T15:33:10.834Z",
+		"tasksAnalyzed": 15,
+		"totalTasks": 15,
+		"analysisCount": 15,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Foundation: Setup GCP/Firebase Project and Firestore",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the GCP/Firebase project setup into four distinct subtasks: 1. Create the GCP project and associate it with Firebase. 2. Enable all required services: Authentication (with Email, Google, Apple providers), Firestore, Cloud Functions, and Cloud Storage. 3. Define and document the initial Firestore data schemas for 'users' and 'call_logs' collections. 4. Implement and unit-test the initial Firestore security rules to ensure users can only access their own data.",
+			"reasoning": "This is a foundational configuration task. While the steps are well-documented, it involves multiple services and critical security rule setup. Breaking it down ensures each component (project creation, service enablement, data modeling, security) is configured correctly and tested independently."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Foundation: Configure Twilio Account and Phone Number Provisioning",
+			"complexityScore": 2,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Expand the Twilio account configuration into three subtasks: 1. Create and upgrade the Twilio account. 2. Purchase a phone number and configure its 'A CALL COMES IN' webhook to a placeholder URL. 3. Create secrets in Google Secret Manager for the Twilio Account SID and Auth Token, and grant the Cloud Function service account access.",
+			"reasoning": "This is a low-complexity configuration task. The steps are linear and straightforward. Separating account setup, number configuration, and security (storing secrets) ensures best practices are followed from the start."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Backend: Develop Initial Twilio Webhook Cloud Function",
+			"complexityScore": 4,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the initial Twilio webhook development into four subtasks: 1. Set up the local development environment for a Node.js/Python Cloud Function, including the Twilio helper library. 2. Implement the HTTP-triggered function logic to parse the incoming Twilio request and return a static TwiML <Say> response. 3. Deploy the function to Google Cloud and obtain its public URL. 4. Update the phone number's voice webhook in the Twilio console to the new Cloud Function URL and test with a live call.",
+			"reasoning": "This is the first coding task for the backend, representing a 'hello world' for the Twilio integration. The complexity is medium as it involves development, deployment, and integration with an external service. The subtasks follow a standard dev-deploy-test cycle."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "iOS: Create Project Skeleton and Authentication UI",
+			"complexityScore": 3,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand the iOS project skeleton task into four subtasks: 1. Create a new Xcode project using SwiftUI and set the minimum iOS target. 2. Integrate the required Firebase SDKs (Auth, Firestore) using Swift Package Manager and configure the project with the GoogleService-Info.plist file. 3. Build the primary authentication UI views for Sign-in and Sign-up, including fields for email/password and buttons for Google/Apple sign-in. 4. Build the separate UI view for the password reset flow.",
+			"reasoning": "This is a standard UI development task. The complexity is low as it focuses solely on layout without business logic. Breaking it down separates project configuration from the creation of distinct UI screens (Auth, Reset), which can be worked on independently."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Backend: Integrate Google Speech-to-Text and Text-to-Speech",
+			"complexityScore": 8,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the real-time audio integration into five subtasks: 1. Refactor the Cloud Function to establish a WebSocket server and respond to Twilio with `<Connect><Stream>` TwiML. 2. Integrate the Google Speech-to-Text API to process the inbound audio stream from Twilio and generate real-time transcripts. 3. Integrate the Google Text-to-Speech API to convert text strings into an audio stream. 4. Implement the core orchestration logic to pipe the outbound TTS audio stream back to Twilio over the WebSocket. 5. Add initial error handling for WebSocket connection drops and API stream failures.",
+			"reasoning": "This is a highly complex task involving real-time, bidirectional audio streaming and integration with two separate AI services. The complexity lies in managing the WebSocket lifecycle and orchestrating the flow of data between Twilio and Google's streaming APIs. Each integration is a significant piece of work."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Backend: Integrate Gemini 2.5 Flash for Conversational AI",
+			"complexityScore": 6,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Expand the Gemini integration into three subtasks: 1. Implement the client-side logic within the Cloud Function to call the Gemini API, passing the transcribed text. 2. Develop and refine the initial system prompt that defines the AI's persona, goals, and constraints as a call screener. 3. Implement a simple conversational memory mechanism to pass relevant context from previous turns to Gemini to maintain coherence.",
+			"reasoning": "The technical API integration is moderately complex, but the main challenge lies in the prompt engineering and state management required to create a coherent conversation. Separating the technical implementation from the AI-specific prompt design and context management is a logical division of work."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Backend: Implement Call Log Persistence and Summary Generation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the call log persistence task into four subtasks: 1. Implement the logic to detect the end of a call (e.g., WebSocket disconnect, Twilio status callback). 2. Upon call completion, make a final API call to Gemini with the full transcript to generate a summary. 3. Construct the final `CallLogDocument` object, including all metadata, the full transcript, and the AI-generated summary. 4. Implement the Firestore write operation to save the document to the 'call_logs' collection, ensuring it's correctly linked to the user's ID.",
+			"reasoning": "This task combines an AI API call with a database write, triggered by the completion of a call. The complexity comes from orchestrating these actions reliably at the end of a stateful process. The subtasks represent the clear, sequential steps: trigger, process, format, and save."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "iOS: Implement User Authentication Logic and Onboarding Flow",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Expand the iOS authentication logic task into five subtasks: 1. Implement the sign-up and sign-in logic using Firebase's Email/Password provider. 2. Integrate and implement the Google Sign-In flow, including all project configuration. 3. Integrate and implement the Sign in with Apple flow. 4. Upon a user's first successful sign-in, create a corresponding user document in the 'users' Firestore collection. 5. Design and implement the post-authentication onboarding flow to request push notification and contact permissions.",
+			"reasoning": "Integrating multiple third-party authentication providers is non-trivial, each with its own configuration and flow. The complexity is increased by the need to create a user record in Firestore post-auth and guide the user through a permissions flow. Each auth provider is a distinct integration."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "iOS: Implement One-Touch Call Forwarding Setup",
+			"complexityScore": 3,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down the call forwarding setup task into three subtasks: 1. Research and compile a list of Conditional Call Forwarding MMI codes for major carriers. Store this in a configurable format (e.g., a JSON file) within the app. 2. Build the SwiftUI view to display instructions and the relevant MMI code to the user. 3. Implement the 'Copy' button using `UIPasteboard` and the 'Dial' button using `UIApplication.shared.open` with a `tel://` URL.",
+			"reasoning": "The technical complexity of this task is low, as it involves simple UI and standard iOS APIs. The main effort is in data collection (MMI codes) and user-friendly presentation. The subtasks separate data gathering from UI implementation and interaction logic."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "iOS: Develop Real-Time Call Log UI",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand the real-time call log UI task into four subtasks: 1. Implement a view model that sets up a Firestore `addSnapshotListener` to observe the current user's 'call_logs' collection and publishes the results. 2. Create the main SwiftUI list view that subscribes to the view model and displays a row for each call log, showing summary data. 3. Create the call log detail view that accepts a call log ID and displays its full details, including the complete transcript. 4. Implement the navigation logic so that tapping a row in the list view pushes the detail view onto the navigation stack.",
+			"reasoning": "This task is of medium complexity because it requires handling real-time data updates from Firestore and managing state within a SwiftUI application. It's more involved than a simple fetch-and-display. The subtasks logically separate data handling, the list view, the detail view, and the navigation between them."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "Backend/iOS: Implement Push Notifications via FCM",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the push notification implementation into five subtasks: 1. (iOS) Configure the app for push notifications, including APNs setup and FCM registration. 2. (iOS/Backend) Implement logic to obtain the FCM device token on the client and save it to the user's document in Firestore. 3. (Backend) In the call completion function, add logic using the Firebase Admin SDK to send a push notification to the user's device. 4. (iOS) Implement code to handle and display the incoming notification when the app is in various states (foreground, background). 5. (Both) Define the notification payload structure for deep-linking.",
+			"reasoning": "This is a full-stack feature with moderate complexity. It requires coordinated work on both the backend (sending) and iOS client (receiving), as well as configuration in Apple and Firebase consoles. The subtasks divide the work logically between client setup, token management, backend logic, and client handling."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "iOS: Implement Service Toggle and Home Screen Widget",
+			"complexityScore": 5,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Expand the service toggle and widget task into four subtasks: 1. (iOS) Implement an in-app toggle switch that reads and writes the `isScreeningActive` boolean field in the user's Firestore document. 2. (Backend) Modify the main Cloud Function to read the `isScreeningActive` flag and bypass screening if it's false. 3. (iOS) Create a new Widget Extension target and design the widget UI using SwiftUI. 4. (iOS) Implement the widget's `TimelineProvider` to fetch the service status and provide timeline entries to WidgetKit, and configure the widget's deep link.",
+			"reasoning": "The in-app toggle is simple, but creating a Home Screen widget adds significant complexity due to the separate WidgetKit framework, lifecycle, and data-fetching mechanisms. The subtasks separate the simple in-app toggle from the more complex widget implementation."
+		},
+		{
+			"taskId": 13,
+			"taskTitle": "Production: Implement Comprehensive Error Handling",
+			"complexityScore": 7,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the comprehensive error handling task into four subtasks: 1. (Backend) Review all external API calls (Twilio, Google, Gemini) and wrap them in robust try-catch blocks with appropriate retry logic and fallback behavior. 2. (Backend) Implement specific error handling for WebSocket connection events, dropped calls, and silent callers to ensure the function terminates gracefully. 3. (iOS) Implement global network error handling and display user-friendly alerts for failed operations. 4. (Backend) Standardize all error logging to Google Cloud Logging with structured JSON payloads, and set up basic alerting for critical error spikes.",
+			"reasoning": "This task is complex because it's a cross-cutting concern that requires a systematic review of the entire application. Implementing a truly robust strategy for a distributed, real-time system is challenging. The subtasks divide the work by domain: backend APIs, backend stream state, client-side UX, and observability."
+		},
+		{
+			"taskId": 14,
+			"taskTitle": "Production: Performance Optimization and Latency Reduction",
+			"complexityScore": 9,
+			"recommendedSubtasks": 4,
+			"expansionPrompt": "Break down the performance optimization task into four subtasks: 1. Instrument the backend function using Google Cloud Trace to measure the latency of each distinct step (STT, Gemini, TTS) and establish a baseline P95 latency. 2. Configure the Cloud Function with a minimum number of instances to mitigate cold starts and measure the impact on call setup time. 3. Investigate and implement optimizations for API interactions, such as using streaming responses from Gemini if available. 4. Conduct a series of tests to measure end-to-end conversational latency and identify remaining bottlenecks.",
+			"reasoning": "This is a very high-complexity task. Optimizing latency in a chain of external, real-time services is difficult and requires deep analysis, measurement, and experimentation, not just straightforward coding. The subtasks follow a standard optimization methodology: measure, address known issues (cold starts), optimize core logic, and re-test."
+		},
+		{
+			"taskId": 15,
+			"taskTitle": "Production: Security Hardening and Load Testing",
+			"complexityScore": 8,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the security and load testing task into five subtasks: 1. Conduct a final review and lockdown of all Firestore security rules and Cloud Function invocation permissions. 2. Audit all API key and secret access, ensuring they are stored in Secret Manager and accessed via least-privilege IAM roles. 3. Implement rate limiting on the main Twilio webhook endpoint to prevent abuse. 4. Design and execute a load test to simulate high concurrent call volume and monitor system stability. 5. Schedule and coordinate a penetration test of the deployed app and backend.",
+			"reasoning": "This task is highly complex as it combines deep security expertise with advanced performance engineering. Finalizing security rules, implementing abuse prevention, and designing a realistic load test for a stateful voice application are all non-trivial, high-stakes activities. Each subtask represents a distinct and critical production-readiness step."
+		}
+	]
+}
