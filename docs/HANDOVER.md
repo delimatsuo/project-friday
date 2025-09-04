@@ -14,9 +14,9 @@ This document maintains the current state and progress of Project Friday develop
 ## Current Session Status
 
 ### Active Task
-- **Task ID**: 3
-- **Description**: Backend: Develop Initial Twilio Webhook Cloud Function
-- **Status**: Pending (Next major development task)
+- **Task ID**: 5
+- **Description**: Backend: Integrate Google Speech-to-Text and Text-to-Speech
+- **Status**: Pending (Next major backend enhancement)
 
 ### Completed Tasks
 - Task 1: Foundation - Setup GCP/Firebase Project and Firestore (All subtasks complete)

@@ -201,7 +201,7 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -209,7 +209,7 @@
             "description": "Initialize a new Xcode project for the iOS application using the SwiftUI App life cycle, targeting iOS 15+, and set up a basic folder structure.",
             "dependencies": [],
             "details": "Create a new project in Xcode using the 'App' template. Set the interface to SwiftUI and the life cycle to 'SwiftUI App'. In the project settings, set the minimum deployment target to iOS 15.0. Create placeholder folders for `Views`, `ViewModels`, and `Services` to establish a clean architecture.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Build and run the template app on an iOS 15+ simulator. Verify the project builds without errors and the initial view is displayed."
           },
           {
@@ -220,7 +220,7 @@
               "4.1"
             ],
             "details": "Using Xcode's Swift Package Manager, add the `firebase-ios-sdk` package. Select the `FirebaseAuth` and `FirebaseFirestore` products. Download the `GoogleService-Info.plist` file from the Firebase console (created in Task 1) and add it to the project's root, ensuring it's included in the main app target. Add `FirebaseApp.configure()` to the app's initializer.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Compile the project to confirm the SDKs are linked correctly. Run the app and check the Xcode console for a successful Firebase initialization message without any configuration-related errors."
           },
           {
@@ -231,7 +231,7 @@
               "4.1"
             ],
             "details": "Create three separate SwiftUI files: `SignInView.swift`, `SignUpView.swift`, and `ForgotPasswordView.swift`. Implement the UI using `TextField` for email, `SecureField` for password, and `Button` for actions. Structure the views with `VStack` and `Spacer` for layout. Do not implement any logic; use placeholder actions for buttons.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Preview each view in Xcode's canvas. Run the app in the simulator and verify the layout is correct and responsive on different device sizes (e.g., iPhone SE, iPhone 14 Pro Max)."
           },
           {
@@ -243,7 +243,7 @@
               "4.3"
             ],
             "details": "Add the `GoogleSignIn` Swift Package via SPM. Create a `UIViewRepresentable` wrapper for the `GIDSignInButton` to use it within the SwiftUI `SignInView` and `SignUpView`. Place the button below the email/password fields.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the app and navigate to the sign-in/sign-up screens. Verify the Google Sign-In button is rendered correctly according to Google's branding guidelines."
           },
           {
@@ -254,7 +254,7 @@
               "4.3"
             ],
             "details": "In the `SignInView` and `SignUpView`, import the `AuthenticationServices` framework and use the native `SignInWithAppleButton`. Place it alongside the Google Sign-In button. Enable the 'Sign in with Apple' capability in the project's 'Signing & Capabilities' tab.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the app on a simulator or device. Verify the 'Sign in with Apple' button appears correctly on the sign-in/sign-up screens. Check that its appearance adapts correctly to both light and dark mode."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-04T23:07:26.885Z",
+      "updated": "2025-09-04T23:53:35.919Z",
       "description": "Tasks for master context"
     }
   }
