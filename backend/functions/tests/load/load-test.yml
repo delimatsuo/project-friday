@@ -1,0 +1,215 @@
+# Artillery Load Testing Configuration for Project Friday
+# Comprehensive load testing scenarios for security validation
+
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Warmup phase - gradual load increase
+    - duration: 60
+      arrivalRate: 1
+      name: "Warmup"
+    # Normal load phase
+    - duration: 180
+      arrivalRate: 5
+      name: "Normal Load"
+    # Peak load phase
+    - duration: 120
+      arrivalRate: 15
+      name: "Peak Load"
+    # Stress test phase
+    - duration: 60
+      arrivalRate: 25
+      name: "Stress Test"
+    # Burst test phase
+    - duration: 30
+      arrivalRate: 50
+      name: "Burst Test"
+  
+  # Test configuration
+  timeout: 30
+  
+  # Payload definitions
+  payload:
+    path: './test-data.csv'
+    fields:
+      - "phone_from"
+      - "phone_to"
+      - "call_sid"
+      - "api_key"
+  
+  # Request defaults
+  defaults:
+    headers:
+      'Content-Type': 'application/json'
+      'User-Agent': 'Artillery-Load-Test/1.0'
+      'Accept': 'application/json'
+  
+  # Performance thresholds
+  ensure:
+    thresholds:
+      - http.response_time.p95: 2000  # 95% of requests under 2s
+      - http.response_time.p99: 5000  # 99% of requests under 5s
+      - http.request_rate: 50         # At least 50 RPS
+      - http.codes.200: 0.90          # 90% success rate minimum
+      - http.codes.429: 0.05          # Max 5% rate limited
+  
+  # Plugins for enhanced monitoring
+  plugins:
+    statsd:
+      host: localhost
+      port: 8125
+      prefix: 'artillery.projectfriday'
+    
+scenarios:
+  # Test 1: API Authentication Load Test
+  - name: "API Authentication Test"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/validate"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          json:
+            test: "authentication_load"
+          expect:
+            - statusCode: [200, 401, 429]
+          capture:
+            - json: "$.success"
+              as: "auth_success"
+      
+      - think: 1
+      
+      # Follow up request if authenticated
+      - post:
+          url: "/api/user/profile"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          ifTrue: "auth_success"
+          expect:
+            - statusCode: [200, 401, 403, 429]
+
+  # Test 2: Webhook Endpoint Load Test
+  - name: "Webhook Load Test"
+    weight: 30
+    flow:
+      - post:
+          url: "/webhook/twilio"
+          headers:
+            X-Twilio-Signature: "valid_signature_{{ $randomString() }}"
+          json:
+            AccountSid: "AC{{ $randomString() }}"
+            CallSid: "{{ call_sid }}"
+            From: "{{ phone_from }}"
+            To: "{{ phone_to }}"
+            Direction: "inbound"
+            CallStatus: "ringing"
+          expect:
+            - statusCode: [200, 400, 401, 429]
+          capture:
+            - json: "$.processed"
+              as: "webhook_processed"
+      
+      - think: 2
+
+  # Test 3: Call Screening API Load Test
+  - name: "Call Screening Load Test"
+    weight: 35
+    flow:
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          json:
+            callSid: "{{ call_sid }}"
+            callerNumber: "{{ phone_from }}"
+            recipientNumber: "{{ phone_to }}"
+            context: "Load test call screening"
+            userPreferences:
+              blockUnknown: false
+              allowContacts: true
+              businessHours: true
+          expect:
+            - statusCode: [200, 400, 401, 429, 503]
+          capture:
+            - json: "$.decision"
+              as: "screening_decision"
+            - json: "$.confidence"
+              as: "confidence_score"
+      
+      - think: 3
+
+  # Test 4: Security Attack Simulation
+  - name: "Security Attack Simulation"
+    weight: 10
+    flow:
+      # SQL Injection Attempt
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          json:
+            callSid: "'; DROP TABLE users; --"
+            callerNumber: "+1234567890"
+            recipientNumber: "+0987654321"
+          expect:
+            - statusCode: [400, 401, 422, 429]
+      
+      - think: 1
+      
+      # XSS Attempt
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          json:
+            callSid: "CA123456789"
+            callerNumber: "<script>alert('xss')</script>+1234567890"
+            recipientNumber: "+0987654321"
+          expect:
+            - statusCode: [400, 401, 422, 429]
+      
+      - think: 1
+      
+      # Oversized Request
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "{{ api_key }}"
+          json:
+            callSid: "CA123456789"
+            callerNumber: "+1234567890"
+            recipientNumber: "+0987654321"
+            context: "{{ $repeat(1000, 'A') }}"  # Large payload
+          expect:
+            - statusCode: [413, 400, 429]
+
+  # Test 5: Rate Limiting Test
+  - name: "Rate Limiting Test"
+    weight: 5
+    flow:
+      # Rapid requests to trigger rate limiting
+      - loop:
+          - post:
+              url: "/api/health"
+              headers:
+                X-API-Key: "{{ api_key }}"
+              expect:
+                - statusCode: [200, 429]
+          count: 20
+          over: 10  # 20 requests over 10 seconds
+      
+      - think: 5
+
+# Before hook - setup test data
+before:
+  flow:
+    - log: "Starting Project Friday load testing..."
+    - post:
+        url: "/health"
+        expect:
+          - statusCode: 200
+
+# After hook - cleanup
+after:
+  flow:
+    - log: "Load testing completed"

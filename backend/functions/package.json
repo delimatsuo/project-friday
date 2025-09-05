@@ -26,7 +26,17 @@
     "test:stress": "autocannon -c 10 -d 60 http://localhost:8080/handleCall",
     "profile": "clinic doctor -- node index.js",
     "profile:flame": "clinic flame -- node index.js",
-    "profile:bubbleprof": "clinic bubbleprof -- node index.js"
+    "profile:bubbleprof": "clinic bubbleprof -- node index.js",
+    "security:test": "jest tests/security/ --verbose",
+    "security:load": "node tests/load/run-load-tests.js",
+    "security:audit": "npm audit --audit-level moderate",
+    "security:validate": "npm run security:test && npm run security:load",
+    "security:full": "npm run security:audit && npm run security:validate",
+    "load:basic": "artillery run tests/load/load-test.yml",
+    "load:security": "artillery run tests/load/security-load-test.yml",
+    "load:report": "artillery run tests/load/load-test.yml --output tests/load/report.json",
+    "validate:security": "npm run security:full",
+    "validate:performance": "npm run test:performance && npm run load:basic"
   },
   "dependencies": {
     "@google-cloud/speech": "^6.7.1",
@@ -36,10 +46,12 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.1.0",
     "firebase-admin": "^12.0.0",
     "firebase-functions": "^4.7.0",
     "helmet": "^7.1.0",
     "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "twilio": "^4.19.3",
@@ -72,7 +84,11 @@
       "**/tests/**/*.test.js",
       "**/test/**/*.test.js"
     ],
-    "moduleFileExtensions": ["js", "jsx", "json"],
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "json"
+    ],
     "collectCoverageFrom": [
       "src/**/*.js",
       "!src/**/*.test.js"

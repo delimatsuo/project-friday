@@ -875,7 +875,7 @@
         "dependencies": [
           6
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -883,7 +883,7 @@
             "description": "Instrument the call screening pipeline with detailed tracing to measure and document the current P95 and P99 latency for the end-to-end AI response loop and its individual components (transcription, AI processing, synthesis).",
             "dependencies": [],
             "details": "Utilize Google Cloud Trace to create custom spans for each major step in the AI response process. Conduct a series of at least 50 test calls to gather a statistically significant dataset. Document the baseline performance figures in a shared report to serve as a benchmark for all subsequent optimizations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify that detailed latency metrics for each component are correctly captured in Google Cloud Trace for every test call. Analyze the collected data to confirm the baseline P95 and P99 values are established."
           },
           {
@@ -894,7 +894,7 @@
               "14.1"
             ],
             "details": "Based on the baseline analysis and expected call volume, determine an appropriate value for the `min-instances` setting in the Cloud Function configuration. Deploy the updated function and monitor the cost implications of keeping instances warm.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "After deployment, conduct a series of test calls, particularly after a period of inactivity. Compare the function's initial response times against the baseline data from subtask 14.1 to confirm a significant reduction in cold start latency."
           },
           {
@@ -905,7 +905,7 @@
               "14.1"
             ],
             "details": "Analyze the TwiML being generated and remove any non-essential attributes or verbs. For the Gemini API call, ensure only the necessary conversation history and context are sent. For Google Speech-to-Text, fine-tune the recognition configuration for speed.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use logging to inspect the request and response bodies before and after optimization to verify size reduction. Re-run component-level latency tests and compare timings with the baseline to measure improvement."
           },
           {
@@ -916,7 +916,7 @@
               "14.1"
             ],
             "details": "Confirm streaming response support in the Gemini API documentation. If available, refactor the Cloud Function to handle the streaming data. This will likely involve using WebSockets via Twilio's `<Connect><Stream>` TwiML verb to pipe the synthesized audio directly to the caller in real-time as it's generated.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "In a test call, verify that audio playback starts almost immediately after the AI begins generating its response. Measure the 'time to first audio byte' and compare the perceived conversational latency with the non-streaming baseline."
           },
           {
@@ -929,7 +929,7 @@
               "14.4"
             ],
             "details": "Execute the same comprehensive test suite used for the initial baseline (subtask 14.1) on the fully optimized system. Gather and analyze the new P95 and P99 latency data. Create a final report comparing the results against the baseline and the <1.5s target, documenting the improvements.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run a load test simulating at least 50 concurrent calls to measure performance under pressure. Analyze the resulting Google Cloud Trace data to formally confirm that the P95 end-to-end AI response latency is below the 1.5s threshold."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T15:57:42.480Z",
+      "updated": "2025-09-05T16:26:39.555Z",
       "description": "Tasks for master context"
     }
   }

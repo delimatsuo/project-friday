@@ -1,0 +1,145 @@
+# Security-Focused Load Testing Configuration
+# Tests security measures under high load conditions
+
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Security stress test
+    - duration: 120
+      arrivalRate: 20
+      name: "Security Stress Test"
+    # DDoS simulation
+    - duration: 60
+      arrivalRate: 100
+      name: "DDoS Simulation"
+  
+  timeout: 10
+  
+  defaults:
+    headers:
+      'Content-Type': 'application/json'
+      'User-Agent': 'SecurityTest/1.0'
+
+scenarios:
+  # Test 1: Rate Limiting Validation
+  - name: "Rate Limiting Validation"
+    weight: 30
+    flow:
+      # Burst of requests to trigger rate limiting
+      - loop:
+          - get:
+              url: "/api/health"
+              expect:
+                - statusCode: [200, 429]
+        count: 50
+        over: 5  # 50 requests in 5 seconds
+      
+      # Check rate limit headers
+      - get:
+          url: "/api/health"
+          expect:
+            - statusCode: [200, 429]
+            - hasHeader: "X-RateLimit-Limit"
+            - hasHeader: "X-RateLimit-Remaining"
+            - hasHeader: "X-RateLimit-Reset"
+
+  # Test 2: Invalid API Key Flooding
+  - name: "Invalid API Key Flooding"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "invalid_key_{{ $randomString() }}"
+          json:
+            callSid: "CA{{ $randomString() }}"
+            callerNumber: "+1{{ $randomInt(1000000000, 9999999999) }}"
+            recipientNumber: "+1{{ $randomInt(1000000000, 9999999999) }}"
+          expect:
+            - statusCode: [401, 429]
+
+  # Test 3: Malicious Payload Testing
+  - name: "Malicious Payload Testing"
+    weight: 20
+    flow:
+      # SQL Injection attempts
+      - post:
+          url: "/webhook/twilio"
+          headers:
+            X-Twilio-Signature: "fake_signature"
+          json:
+            AccountSid: "'; DROP TABLE calls; --"
+            CallSid: "CA' OR '1'='1"
+            From: "+1234567890"
+            To: "+0987654321"
+          expect:
+            - statusCode: [400, 401, 422, 429]
+      
+      # XSS attempts
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "pf_test_abcd1234567890abcdef1234567890ab"
+          json:
+            callSid: "<script>alert('xss')</script>"
+            callerNumber: "+1234567890"
+            recipientNumber: "+0987654321"
+            context: "<img src=x onerror=alert(1)>"
+          expect:
+            - statusCode: [400, 422, 429]
+      
+      # Command injection attempts
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "pf_test_abcd1234567890abcdef1234567890ab"
+          json:
+            callSid: "CA123456789"
+            callerNumber: "+1234567890; cat /etc/passwd"
+            recipientNumber: "+0987654321"
+          expect:
+            - statusCode: [400, 422, 429]
+
+  # Test 4: Large Payload Attack
+  - name: "Large Payload Attack"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/screen-call"
+          headers:
+            X-API-Key: "pf_test_abcd1234567890abcdef1234567890ab"
+          json:
+            callSid: "CA123456789"
+            callerNumber: "+1234567890"
+            recipientNumber: "+0987654321"
+            context: "{{ $repeat(10000, 'LARGE_PAYLOAD_TEST_') }}"
+          expect:
+            - statusCode: [413, 400, 429]
+
+  # Test 5: Header Manipulation
+  - name: "Header Manipulation"
+    weight: 10
+    flow:
+      # Host header injection
+      - get:
+          url: "/api/health"
+          headers:
+            Host: "evil.com"
+          expect:
+            - statusCode: [400, 403, 200]
+      
+      # Origin header testing
+      - options:
+          url: "/api/screen-call"
+          headers:
+            Origin: "https://malicious-site.com"
+          expect:
+            - statusCode: [403, 200]
+      
+      # User-Agent flooding
+      - get:
+          url: "/api/health"
+          headers:
+            User-Agent: "{{ $repeat(1000, 'A') }}"
+          expect:
+            - statusCode: [400, 413, 200]
