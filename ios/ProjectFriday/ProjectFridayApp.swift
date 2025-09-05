@@ -4,6 +4,7 @@ import Firebase
 @main
 struct ProjectFridayApp: App {
     @StateObject private var authViewModel = AuthenticationViewModel()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
         configureFirebase()

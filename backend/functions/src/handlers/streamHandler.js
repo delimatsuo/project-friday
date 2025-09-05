@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const SpeechService = require('../services/speechService');
 const GeminiService = require('../services/geminiService');
 const FirestoreService = require('../services/firestoreService');
+const NotificationService = require('../services/notificationService');
 
 class StreamHandler {
   constructor() {
@@ -12,6 +13,8 @@ class StreamHandler {
       new GeminiService(process.env.GOOGLE_API_KEY) : null;
     // Initialize Firestore service
     this.firestoreService = new FirestoreService();
+    // Initialize Notification service
+    this.notificationService = new NotificationService();
   }
 
   /**
@@ -357,6 +360,38 @@ class StreamHandler {
             totalDuration: duration,
             lastCallAt: endTime,
           });
+        }
+
+        // Send push notification to user about completed call
+        if (this.notificationService && connection.userId) {
+          try {
+            const notificationData = {
+              callId: savedLog.id,
+              phoneNumber: connection.phoneNumber || 'Unknown',
+              callerName: callerInfo.name || analysis?.callerName || 'Unknown',
+              aiSummary: summary || 'Call completed',
+              urgency: analysis?.urgency || 'medium',
+              timestamp: endTime,
+              duration: duration,
+              actionRequired: analysis?.actionRequired || false,
+            };
+
+            const notificationResult = await this.notificationService.sendCallNotification(
+              connection.userId,
+              notificationData
+            );
+
+            if (notificationResult.success) {
+              console.log('Push notification sent successfully:', notificationResult.messageId);
+            } else if (notificationResult.skipped) {
+              console.log('Push notification skipped:', notificationResult.reason);
+            } else {
+              console.error('Push notification failed:', notificationResult.error);
+            }
+          } catch (notificationError) {
+            console.error('Failed to send push notification:', notificationError);
+            // Don't throw error - notification failure shouldn't break call processing
+          }
         }
       } catch (error) {
         console.error('Error saving call log to Firestore:', error);

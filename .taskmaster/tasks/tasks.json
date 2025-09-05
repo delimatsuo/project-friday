@@ -605,7 +605,7 @@
           7,
           8
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -613,7 +613,7 @@
             "description": "Create the Swift data model that maps to a Firestore 'call_logs' document and set up the associated ViewModel for UI state management.",
             "dependencies": [],
             "details": "Define a `CallLog` struct conforming to `Codable` and `Identifiable` with properties for caller ID, timestamp, AI summary, and full transcript. Create a `CallLogViewModel` as an `ObservableObject` containing a `@Published` array of `CallLog` items to hold the data for the view.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify that a sample JSON object representing a Firestore document can be successfully decoded into the `CallLog` struct."
           },
           {
@@ -624,7 +624,7 @@
               "10.1"
             ],
             "details": "In the `CallLogViewModel`, create a function to attach a Firestore snapshot listener (`addSnapshotListener`) to the 'call_logs' collection for the authenticated user. The listener should handle decoding documents into `CallLog` objects, updating the `@Published` array, and managing error states. Order the query by timestamp in descending order.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "With the app running, manually add or modify a document in the user's 'call_logs' collection in the Firebase console. Verify the ViewModel's data array updates automatically and logs the changes."
           },
           {
@@ -635,7 +635,7 @@
               "10.1"
             ],
             "details": "Create a `CallLogListView` that observes the `CallLogViewModel`. Use a `List` to iterate over the call logs. Design a reusable `CallLogRowView` that takes a single `CallLog` object and displays the caller ID, a user-friendly formatted timestamp (e.g., 'Today, 5:32 PM'), and the AI summary. Focus on a clean and readable layout.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the app and populate the ViewModel with mock `CallLog` data. Verify the list renders correctly and each row displays the expected information. Check layout on different device sizes."
           },
           {
@@ -646,7 +646,7 @@
               "10.1"
             ],
             "details": "Create a new SwiftUI view named `CallDetailView`. This view will accept a `CallLog` object as a parameter. It should display the caller ID, the full timestamp, and the full call transcript in a scrollable text view. Ensure the text is formatted for easy reading.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Instantiate the `CallDetailView` in a SwiftUI preview with a mock `CallLog` object containing a long transcript. Verify the view renders correctly and the transcript is scrollable."
           },
           {
@@ -658,7 +658,7 @@
               "10.4"
             ],
             "details": "Wrap the `CallLogListView` in a `NavigationView`. Modify the `CallLogRowView` or the list's `ForEach` loop to embed each row within a `NavigationLink`. The `NavigationLink`'s destination should be the `CallDetailView`, passing the selected `CallLog` item to it.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the app with the real-time listener active. Tap on a row in the list and verify that it navigates to the detail view and displays the correct transcript for the tapped item. Test the back navigation."
           }
         ]
@@ -674,7 +674,7 @@
           7,
           8
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T13:52:12.905Z",
+      "updated": "2025-09-05T14:12:15.122Z",
       "description": "Tasks for master context"
     }
   }
