@@ -536,7 +536,7 @@
         "dependencies": [
           8
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -544,7 +544,7 @@
             "description": "Research and compile a list of Conditional Call Forwarding (CCF) MMI activation and deactivation codes for major mobile carriers. Design a data structure, such as a JSON file or Swift dictionary, to store this information, mapping carriers to their respective codes.",
             "dependencies": [],
             "details": "The research should cover major carriers in target markets (e.g., US, UK, EU). The data model must include the carrier name, an activation code template (e.g., `*004*<PHONE_NUMBER>#`), and a deactivation code (e.g., `##004#`). This data will be bundled with the app.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Validate the compiled list of codes against official carrier documentation for accuracy. Create a unit test to parse the data file (e.g., JSON) and verify the model objects are created correctly."
           },
           {
@@ -553,7 +553,7 @@
             "description": "Create the static SwiftUI view for the call forwarding setup screen. This view will display instructional text, a placeholder for the carrier-specific code, and buttons for 'Copy Code' and 'Dial Now'.",
             "dependencies": [],
             "details": "Focus on the UI layout and presentation using SwiftUI. The view should clearly explain the purpose of the MMI code. Use placeholder data for the code and instructions initially. Ensure the layout is responsive to different screen sizes.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Run the app in the iOS simulator on various device sizes (e.g., iPhone SE, iPhone 14 Pro Max) to verify the UI renders correctly and is not truncated. Write a UI test to confirm the presence of key elements like the instruction text and the two action buttons."
           },
           {
@@ -564,7 +564,7 @@
               "9.1"
             ],
             "details": "Use `CTTelephonyNetworkInfo` and `CTCarrier` to get the `carrierName`. Implement logic to match this name against the MMI code database. Create a service or view model that takes the user's provisioned phone number and returns the complete, dialable MMI string.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test on a physical device with a SIM card from a known carrier. Log the detected carrier name and the generated MMI code to ensure they are correct. Test the fallback logic for when a carrier is not found in the database."
           },
           {
@@ -576,7 +576,7 @@
               "9.3"
             ],
             "details": "For the copy action, use `UIPasteboard.general.string` to place the generated MMI code onto the clipboard. For the dial action, construct a URL, ensuring special characters like '#' are properly handled (they are typically allowed in 'tel' URLs without encoding), and call `UIApplication.shared.open()`.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "On a physical device, tap the 'Copy' button and verify the code can be pasted into another app. Tap the 'Dial' button and confirm the native Phone app opens with the correct MMI code pre-filled and ready to be called."
           },
           {
@@ -589,7 +589,7 @@
               "9.4"
             ],
             "details": "The SwiftUI view should now be connected to a view model that provides the dynamic MMI code. If no carrier is detected (e.g., no SIM, airplane mode), the UI should display an informative message. If the carrier is not in the database, provide a fallback message guiding the user to find the code manually.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Perform end-to-end testing on a physical device with a supported carrier SIM. Test on a device with an unsupported carrier SIM to verify the fallback UI. Test in the simulator or on a device in airplane mode to verify the 'no SIM/service' state is handled correctly."
           }
         ]
@@ -605,7 +605,7 @@
           7,
           8
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T13:31:51.103Z",
+      "updated": "2025-09-05T13:52:12.905Z",
       "description": "Tasks for master context"
     }
   }

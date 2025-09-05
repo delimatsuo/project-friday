@@ -172,25 +172,7 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Call Log View
-
-struct CallLogView: View {
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(0..<10) { index in
-                    RecentCallRow(
-                        callerName: "Caller \(index + 1)",
-                        time: "\(index + 1) hours ago",
-                        status: index % 3 == 0 ? .blocked : (index % 2 == 0 ? .screened : .allowed),
-                        reason: "Sample reason"
-                    )
-                }
-            }
-            .navigationTitle("Call Log")
-        }
-    }
-}
+// Call Log View is now implemented in Views/CallLog/CallLogView.swift
 
 // MARK: - Settings View
 
