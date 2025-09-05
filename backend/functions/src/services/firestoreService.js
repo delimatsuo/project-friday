@@ -628,4 +628,4 @@ class FirestoreService {
   }
 }
 
-export default FirestoreService;
+module.exports = FirestoreService;

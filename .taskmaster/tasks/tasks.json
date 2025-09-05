@@ -811,7 +811,7 @@
           6,
           10
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -819,7 +819,7 @@
             "description": "Wrap all external API calls within the Cloud Function (to Twilio, Gemini, Google Speech) in try-catch blocks to prevent crashes from API failures, timeouts, or invalid responses.",
             "dependencies": [],
             "details": "For each external service call, implement logic to catch exceptions. On failure, the system should log the detailed error to Google Cloud Logging and decide on a graceful fallback, such as playing a generic error message to the caller or terminating the call cleanly.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use mock servers or temporarily invalidate API keys for Twilio, Gemini, and Google Speech to trigger failure conditions. Verify that the function does not crash and that a specific error is logged in Google Cloud Logging."
           },
           {
@@ -828,7 +828,7 @@
             "description": "Implement logic within the WebSocket handler to gracefully manage unexpected call terminations (dropped calls) and periods of prolonged silence from the caller.",
             "dependencies": [],
             "details": "Monitor the WebSocket connection state to detect when a caller hangs up abruptly. Implement a timeout mechanism that triggers if no audio is received from the caller for a specified duration (e.g., 15 seconds). In both cases, log the event and ensure the Cloud Function and associated resources are terminated cleanly.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Initiate a test call and hang up mid-conversation to simulate a dropped call. Separately, initiate a call and remain silent. Verify that the system logs the correct event and terminates the session without errors."
           },
           {
@@ -840,7 +840,7 @@
               "13.2"
             ],
             "details": "Define a JSON payload structure for logs that includes a unique error code, error message, service name (e.g., 'Gemini', 'Twilio'), call SID, and relevant stack trace. Refactor the error handling logic from the other backend subtasks to use this centralized logging utility.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "After implementing the new logging structure, trigger various errors (API failure, dropped call). Query Google Cloud Logging to verify that all error logs adhere to the new, standardized JSON format and contain the correct contextual information."
           },
           {
@@ -849,7 +849,7 @@
             "description": "Add robust error handling to all interactions with Firebase services, including Firestore and Firebase Authentication, to manage network failures and backend rule rejections.",
             "dependencies": [],
             "details": "Wrap all Firebase calls (e.g., fetching call logs, user sign-in, sign-up) in `do-catch` blocks when using Swift's `async/await` or check the `error` object in completion handlers. This includes handling scenarios like loss of internet connectivity, permission denied errors from Firestore rules, and authentication failures.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Turn on Airplane Mode on the test device to simulate network failure and attempt a Firebase operation. Modify Firestore security rules to temporarily deny access and verify the app catches the 'permission-denied' error."
           },
           {
@@ -860,7 +860,7 @@
               "13.4"
             ],
             "details": "Create reusable SwiftUI views (e.g., non-intrusive alerts or banners) to display errors. Map technical errors caught in subtask 13.4 to user-friendly messages (e.g., map a network timeout to 'Could not connect. Please check your internet connection and try again.').",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Trigger a known error (e.g., by simulating a network failure). Verify that the app displays the corresponding user-friendly message in the correct UI component, rather than crashing or showing a technical error code."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T15:17:36.481Z",
+      "updated": "2025-09-05T15:40:14.116Z",
       "description": "Tasks for master context"
     }
   }
