@@ -269,7 +269,7 @@
         "dependencies": [
           3
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -309,7 +309,7 @@
               "5.3"
             ],
             "details": "After generating audio with the TTS module, base64 encode the raw audio data. Construct a JSON 'media' message containing the stream's `sid` and the base64 audio in the `payload` field. Send this JSON string over the active WebSocket connection to Twilio.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "In the Cloud Function, after receiving a transcript, immediately trigger a hardcoded TTS response (e.g., \"I hear you\"). During a live call, confirm that this audio response is played back to the caller after they speak."
           },
           {
@@ -321,7 +321,7 @@
               "5.4"
             ],
             "details": "In the STT result handler, once a final transcript is received, pass this text to the TTS module. Take the resulting audio from the TTS module and pass it to the outbound streaming function. This wires the STT and TTS components together, pending integration with the Gemini AI logic (Task 6).",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Perform an end-to-end test by calling the Twilio number. Speak a sentence and verify that the system synthesizes and plays back a response based on the transcribed text (e.g., an echo of what was said)."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T00:02:18.932Z",
+      "updated": "2025-09-05T00:04:52.262Z",
       "description": "Tasks for master context"
     }
   }
