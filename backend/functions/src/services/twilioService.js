@@ -6,12 +6,18 @@
 import twilio from 'twilio';
 import crypto from 'crypto';
 import logger from '../utils/logger.js';
+import ErrorHandler from './errorHandler.js';
+import EnhancedLogger from './enhancedLogger.js';
 
 class TwilioService {
   constructor() {
     this.accountSid = process.env.TWILIO_ACCOUNT_SID;
     this.authToken = process.env.TWILIO_AUTH_TOKEN;
     this.phoneNumber = process.env.TWILIO_PHONE_NUMBER;
+    
+    // Initialize error handling
+    this.errorHandler = new ErrorHandler();
+    this.enhancedLogger = new EnhancedLogger();
     
     if (this.accountSid && this.authToken) {
       this.client = twilio(this.accountSid, this.authToken);
@@ -153,37 +159,39 @@ class TwilioService {
   }
 
   /**
-   * Make outbound call
+   * Make outbound call with error handling and retry logic
    */
   async makeCall(to, webhookUrl, statusCallback) {
-    try {
-      if (!this.client) {
-        throw new Error('Twilio client not initialized');
-      }
+    return await this.errorHandler.executeWithCircuitBreaker('twilio', async () => {
+      return await this.errorHandler.executeWithRetry(async () => {
+        if (!this.client) {
+          throw new Error('Twilio client not initialized');
+        }
 
-      const call = await this.client.calls.create({
-        to: to,
-        from: this.phoneNumber,
-        url: webhookUrl,
-        statusCallback: statusCallback,
-        statusCallbackMethod: 'POST',
-        statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-        record: true,
-        recordingStatusCallback: '/recordingStatus',
-        recordingStatusCallbackMethod: 'POST'
+        const call = await this.client.calls.create({
+          to: to,
+          from: this.phoneNumber,
+          url: webhookUrl,
+          statusCallback: statusCallback,
+          statusCallbackMethod: 'POST',
+          statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+          record: true,
+          recordingStatusCallback: '/recordingStatus',
+          recordingStatusCallbackMethod: 'POST'
+        });
+
+        logger.info('Outbound call initiated', { 
+          callSid: call.sid, 
+          to: to,
+          from: this.phoneNumber 
+        });
+
+        return call;
+      }, { 
+        maxRetries: 3,
+        baseDelay: 2000 // 2 second base delay for Twilio calls
       });
-
-      logger.info('Outbound call initiated', { 
-        callSid: call.sid, 
-        to: to,
-        from: this.phoneNumber 
-      });
-
-      return call;
-    } catch (error) {
-      logger.error('Error making outbound call', error);
-      throw error;
-    }
+    });
   }
 
   /**

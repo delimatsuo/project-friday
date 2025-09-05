@@ -10,6 +10,7 @@ class FirebaseService: ObservableObject {
     
     private let db = Firestore.firestore()
     private let auth = Auth.auth()
+    private let errorHandler = ErrorHandler()
     
     private init() {}
     
@@ -33,13 +34,11 @@ class FirebaseService: ObservableObject {
     // MARK: - Authentication
     
     func signIn(email: String, password: String) async throws -> User {
-        do {
+        return try await errorHandler.executeWithRetry {
             let result = try await auth.signIn(withEmail: email, password: password)
             let user = User(from: result.user)
             try await saveUserToFirestore(user: user)
             return user
-        } catch {
-            throw AuthError(from: error)
         }
     }
     
@@ -146,35 +145,37 @@ class FirebaseService: ObservableObject {
     // MARK: - Firestore Operations
     
     private func saveUserToFirestore(user: User) async throws {
-        let userDoc = db.collection("users").document(user.id)
-        
-        // Check if user document exists
-        let document = try await userDoc.getDocument()
-        let isNewUser = !document.exists
-        
-        var userData: [String: Any] = [
-            "id": user.id,
-            "email": user.email,
-            "displayName": user.displayName ?? "",
-            "phoneNumber": user.phoneNumber ?? "",
-            "photoURL": user.photoURL ?? "",
-            "isEmailVerified": user.isEmailVerified,
-            "lastSignIn": Date(),
-            "updatedAt": Date()
-        ]
-        
-        // Only set these fields for new users
-        if isNewUser {
-            userData["createdAt"] = user.createdAt
-            userData["isCallScreeningEnabled"] = user.isCallScreeningEnabled
-            userData["allowedContacts"] = user.allowedContacts
-            userData["blockedNumbers"] = user.blockedNumbers
-            userData["screeningPrompt"] = user.screeningPrompt ?? ""
-            userData["hasCompletedOnboarding"] = false
-            userData["profileCompleted"] = false
+        try await errorHandler.executeWithCircuitBreaker(serviceName: "firestore") {
+            let userDoc = self.db.collection("users").document(user.id)
+            
+            // Check if user document exists
+            let document = try await userDoc.getDocument()
+            let isNewUser = !document.exists
+            
+            var userData: [String: Any] = [
+                "id": user.id,
+                "email": user.email,
+                "displayName": user.displayName ?? "",
+                "phoneNumber": user.phoneNumber ?? "",
+                "photoURL": user.photoURL ?? "",
+                "isEmailVerified": user.isEmailVerified,
+                "lastSignIn": Date(),
+                "updatedAt": Date()
+            ]
+            
+            // Only set these fields for new users
+            if isNewUser {
+                userData["createdAt"] = user.createdAt
+                userData["isCallScreeningEnabled"] = user.isCallScreeningEnabled
+                userData["allowedContacts"] = user.allowedContacts
+                userData["blockedNumbers"] = user.blockedNumbers
+                userData["screeningPrompt"] = user.screeningPrompt ?? ""
+                userData["hasCompletedOnboarding"] = false
+                userData["profileCompleted"] = false
+            }
+            
+            try await userDoc.setData(userData, merge: true)
         }
-        
-        try await userDoc.setData(userData, merge: true)
     }
     
     func fetchUser(uid: String) async throws -> User? {

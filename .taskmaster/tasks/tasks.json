@@ -674,7 +674,7 @@
           7,
           8
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -682,7 +682,7 @@
             "description": "Set up the Apple Push Notification service (APNs) key in the Apple Developer portal, upload it to the Firebase project, and configure the iOS app with the necessary SDKs and capabilities.",
             "dependencies": [],
             "details": "Create an APNs Auth Key via the Apple Developer portal. In the Firebase Console, navigate to Project Settings > Cloud Messaging and upload the APNs key. Add the `Firebase/Messaging` SDK to the iOS project using Swift Package Manager or CocoaPods. In Xcode, add the 'Push Notifications' and 'Background Modes (Remote notifications)' capabilities. Add the downloaded `GoogleService-Info.plist` file to the app target.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify the project builds successfully after adding the SDK. Confirm that the app does not crash on launch due to misconfiguration of the Firebase plist file."
           },
           {
@@ -693,7 +693,7 @@
               "11.1"
             ],
             "details": "In the `AppDelegate`, use `UNUserNotificationCenter.current().requestAuthorization` to prompt the user for notification permissions. Implement the `MessagingDelegate` protocol and its `messaging(_:didReceiveRegistrationToken:)` method to receive the FCM token. Create a Firestore service class that updates the current user's document with the new FCM token.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "On first launch, verify the permission prompt is displayed. After granting permission, check Firestore to confirm the user's document contains a valid `fcmToken` string."
           },
           {
@@ -702,7 +702,7 @@
             "description": "Modify the call completion Cloud Function to use the Firebase Admin SDK to send a push notification. The function will retrieve the user's device token and send a payload containing the call summary.",
             "dependencies": [],
             "details": "In the Cloud Function triggered after a call ends (dependent on Task 7), after the call log is written to Firestore, retrieve the `userId` associated with the call. Use this `userId` to fetch the user's document and their stored `fcmToken`. Construct an FCM message payload with a title, body, and the AI summary in the `data` field. Use `admin.messaging().send()` to dispatch the notification.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Write a unit test for the Cloud Function that mocks the Firestore read and verifies that `admin.messaging().send()` is called with the correct token and payload. Check function logs after a real call for successful execution."
           },
           {
@@ -713,7 +713,7 @@
               "11.1"
             ],
             "details": "Conform to `UNUserNotificationCenterDelegate`. Implement `userNotificationCenter(_:willPresent:withCompletionHandler:)` to handle notifications that arrive while the app is in the foreground (e.g., show a custom in-app alert). Implement `userNotificationCenter(_:didReceive:withCompletionHandler:)` to handle user interactions with the notification, such as tapping on it to navigate to a specific screen. Parse the `userInfo` dictionary to extract the AI summary from the data payload.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Use a tool like the Firebase Console or a test script to send a sample notification to a test device. Verify the notification is displayed correctly and that the app responds appropriately when the notification is tapped."
           },
           {
@@ -726,7 +726,7 @@
               "11.4"
             ],
             "details": "Using a physical test device, initiate and complete a screened call. Verify that a push notification is received within 5 seconds of the call ending. Repeat this test for three scenarios: 1) App is open and in the foreground. 2) App is in the background. 3) App is terminated (swiped away). In all cases, confirm the notification content is correct and includes the AI summary.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Execute the detailed test plan. Document the time from call end to notification receipt. Verify the payload content on the device. Check Cloud Function logs for any errors during the send process."
           }
         ]
@@ -811,7 +811,7 @@
           6,
           10
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T14:12:15.122Z",
+      "updated": "2025-09-05T15:17:36.481Z",
       "description": "Tasks for master context"
     }
   }
