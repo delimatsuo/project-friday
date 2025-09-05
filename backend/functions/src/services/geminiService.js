@@ -396,6 +396,36 @@ Requirements:
       };
     }
   }
+
+  // Method aliases for compatibility with different naming conventions
+  
+  /**
+   * Alias for cleanResponseForVoice - processes response for TTS optimization
+   */
+  processResponseForVoice(text) {
+    return this.cleanResponseForVoice(text);
+  }
+
+  /**
+   * Alias for generateSummary - generates call summary
+   */
+  async generateCallSummary(transcript, aiResponses = []) {
+    return await this.generateSummary(transcript, aiResponses);
+  }
+
+  /**
+   * Alias for shouldShortenResponse - checks if response is too long
+   */
+  isResponseTooLong(text) {
+    return this.shouldShortenResponse(text);
+  }
+
+  /**
+   * Alias for generateShorterResponse - shortens response
+   */
+  async shortenResponse(originalResponse, userInput) {
+    return await this.generateShorterResponse(originalResponse, userInput);
+  }
 }
 
 export default GeminiService;

@@ -55,6 +55,17 @@
   "private": true,
   "jest": {
     "testEnvironment": "node",
-    "preset": "@babel/preset-env"
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    },
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/test/**/*.test.js"
+    ],
+    "moduleFileExtensions": ["js", "jsx", "json"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js"
+    ]
   }
 }

@@ -1,10 +1,14 @@
 const WebSocket = require('ws');
 const SpeechService = require('../services/speechService');
+const GeminiService = require('../services/geminiService');
 
 class StreamHandler {
   constructor() {
     this.connections = new Map();
     this.wss = null;
+    // Initialize Gemini service with API key from environment
+    this.geminiService = process.env.GOOGLE_API_KEY ? 
+      new GeminiService(process.env.GOOGLE_API_KEY) : null;
   }
 
   /**
@@ -98,17 +102,33 @@ class StreamHandler {
    * @param {Object} connection - Connection object
    * @param {Object} data - Event data
    */
-  handleConnected(connection, data) {
+  async handleConnected(connection, data) {
     connection.callSid = data.protocol?.callSid;
     connection.metadata = {
       ...data.protocol,
       connectedAt: new Date().toISOString(),
     };
 
+    // Generate initial greeting
+    let greeting;
+    if (this.geminiService) {
+      try {
+        // Use Gemini to generate a professional greeting
+        greeting = await this.geminiService.generateResponse(
+          "[SYSTEM: New incoming call connected. Generate initial greeting]",
+          []
+        );
+        greeting = this.geminiService.processResponseForVoice(greeting);
+      } catch (error) {
+        console.error('Error generating AI greeting:', error);
+        greeting = "Hello, this is Friday, your AI assistant. I'm here to help screen your call. May I ask who's calling?";
+      }
+    } else {
+      greeting = "Hello, this is Friday, your AI assistant. I'm here to help screen your call. May I ask who's calling?";
+    }
+
     // Send initial greeting
-    this.sendTTSResponse(connection, 
-      "Hello from Project Friday. I'm your AI assistant. How can I help you today?"
-    );
+    await this.sendTTSResponse(connection, greeting);
   }
 
   /**
@@ -177,9 +197,36 @@ class StreamHandler {
   async processUserInput(connection, userInput) {
     console.log('Processing user input:', userInput);
     
-    // For now, echo back what the user said
-    // This will be replaced with Gemini AI integration later
-    const response = `I heard you say: "${userInput}". This feature is being configured.`;
+    let response;
+    
+    if (this.geminiService) {
+      try {
+        // Generate AI response using Gemini
+        const aiResponse = await this.geminiService.generateResponse(
+          userInput,
+          connection.transcripts
+        );
+        
+        // Process the response for voice synthesis
+        response = this.geminiService.processResponseForVoice(aiResponse);
+        
+        // Store the AI response in connection history
+        connection.transcripts.push({
+          transcript: response,
+          isFinal: true,
+          isAI: true,
+          timestamp: new Date().toISOString(),
+        });
+        
+        console.log('AI Response:', response);
+      } catch (error) {
+        console.error('Error generating AI response:', error);
+        response = "I'm having trouble understanding. Could you please repeat that?";
+      }
+    } else {
+      // Fallback if Gemini service is not configured
+      response = "Hello, this is Friday, your AI assistant. I'm here to help screen your call. May I ask who's calling and the purpose of your call?";
+    }
     
     await this.sendTTSResponse(connection, response);
   }
@@ -221,9 +268,24 @@ class StreamHandler {
    * Handle stop event
    * @param {Object} connection - Connection object
    */
-  handleStop(connection) {
+  async handleStop(connection) {
     const { speechService } = connection;
     speechService.stopSpeechToText();
+    
+    // Generate call summary if Gemini is available
+    if (this.geminiService && connection.transcripts.length > 0) {
+      try {
+        const summary = await this.geminiService.generateSummary(connection.transcripts);
+        console.log('Call Summary:', summary);
+        
+        // Store summary in connection for potential later use
+        connection.summary = summary;
+        
+        // TODO: Save summary to Firestore for the user
+      } catch (error) {
+        console.error('Error generating call summary:', error);
+      }
+    }
     
     // Log session summary
     console.log('Session summary:', {
@@ -231,6 +293,7 @@ class StreamHandler {
       callSid: connection.callSid,
       transcriptCount: connection.transcripts.length,
       duration: this.calculateDuration(connection),
+      summary: connection.summary || 'No summary generated',
     });
   }
 
