@@ -29,3 +29,4 @@ project-friday-*.json
 # OS specific
 .DS_Store
 backend/functions/.env.local
+ios/.build/
