@@ -6,5 +6,13 @@
     "duration": 16.768665999999996,
     "timestamp": 1757011330348,
     "metadata": {}
+  },
+  {
+    "id": "cmd-hooks-1757087946739",
+    "type": "hooks",
+    "success": true,
+    "duration": 3009.9714169999997,
+    "timestamp": 1757087949749,
+    "metadata": {}
   }
 ]

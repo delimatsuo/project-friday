@@ -20,7 +20,13 @@
     "serve:websocket": "node websocket-server.js",
     "serve:stream": "functions-framework --source=index.js --target=handleCallWithStream --port=8080",
     "lint": "eslint src/ index.js",
-    "lint:fix": "eslint src/ index.js --fix"
+    "lint:fix": "eslint src/ index.js --fix",
+    "test:performance": "jest tests/performance/",
+    "test:load": "artillery run tests/performance/load-test.yml",
+    "test:stress": "autocannon -c 10 -d 60 http://localhost:8080/handleCall",
+    "profile": "clinic doctor -- node index.js",
+    "profile:flame": "clinic flame -- node index.js",
+    "profile:bubbleprof": "clinic bubbleprof -- node index.js"
   },
   "dependencies": {
     "@google-cloud/speech": "^6.7.1",
@@ -45,6 +51,10 @@
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.23.0",
     "@google-cloud/functions-framework": "^4.0.0",
+    "@google-cloud/trace-agent": "^7.1.2",
+    "artillery": "^2.0.0",
+    "autocannon": "^7.14.0",
+    "clinic": "^12.1.0",
     "eslint": "^8.52.0",
     "eslint-config-google": "^0.14.0",
     "firebase-functions-test": "^3.1.1",

@@ -1,0 +1,117 @@
+# Artillery Load Test Configuration for Project Friday Call Screening
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Warmup phase
+    - duration: 30
+      arrivalRate: 1
+      name: "Warmup"
+    # Gradual ramp-up
+    - duration: 120
+      arrivalRate: 1
+      rampTo: 5
+      name: "Ramp up to 5 RPS"
+    # Sustained load
+    - duration: 300
+      arrivalRate: 5
+      name: "Sustained 5 RPS"
+    # Peak load test
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 10
+      name: "Peak load 10 RPS"
+    # Cool down
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 1
+      name: "Cool down"
+  
+  # Performance targets
+  ensure:
+    p95: 1500  # 95th percentile response time should be under 1.5s
+    p99: 2000  # 99th percentile response time should be under 2s
+    maxErrorRate: 1  # Error rate should be under 1%
+
+  # HTTP configuration
+  http:
+    timeout: 30
+    pool: 10
+
+  # Variables for test data
+  variables:
+    userInputs:
+      - "Hello, I need help with something"
+      - "Can you tell me about the weather?"
+      - "I'm looking for information about my appointment"
+      - "What services do you provide?"
+      - "Can you help me with a technical issue?"
+      - "I need to reschedule something"
+      - "Tell me about your features"
+      - "How can you assist me today?"
+      - "I have a question about my account"
+      - "What's the best way to contact support?"
+
+  # Plugins for advanced metrics
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+    
+  # Output configuration
+  output:
+    - type: json
+      path: /tmp/artillery-report.json
+
+scenarios:
+  # Main call screening scenario
+  - name: "Call Screening Flow"
+    weight: 70
+    flow:
+      - post:
+          url: "/handleCall"
+          headers:
+            Content-Type: "application/x-www-form-urlencoded"
+          form:
+            From: "+1234567890"
+            To: "+1987654321"
+            CallSid: "CA{{ $randomString() }}"
+            CallStatus: "in-progress"
+            Direction: "inbound"
+          capture:
+            - json: "$.callSid"
+              as: "callSid"
+          expect:
+            - statusCode: 200
+            - contentType: "application/xml"
+          think: 2
+
+  # AI Response scenario
+  - name: "AI Response Generation"  
+    weight: 20
+    flow:
+      - post:
+          url: "/generateResponse"
+          json:
+            userInput: "{{ userInputs[$randomNumber(0, 9)] }}"
+            callSid: "CA{{ $randomString() }}"
+            previousTranscript: ""
+          expect:
+            - statusCode: 200
+            - hasProperty: "response"
+          think: 1
+
+  # Status check scenario
+  - name: "Health Check"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+
+# Custom functions for test data generation
+functions:
+  randomString:
+    - |
+      function() {
+        return Math.random().toString(36).substring(2, 15);
+      }

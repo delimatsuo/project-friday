@@ -6,7 +6,20 @@
   "functions": [
     {
       "source": "functions",
-      "codebase": "default"
+      "codebase": "default",
+      "runtime": "nodejs20",
+      "memory": "512MB",
+      "timeout": "60s",
+      "minInstances": 2,
+      "maxInstances": 100,
+      "labels": {
+        "app": "project-friday",
+        "component": "call-screening",
+        "optimization": "enabled"
+      },
+      "environmentVariables": {
+        "NODE_OPTIONS": "--max-old-space-size=512 --optimize-for-size"
+      }
     }
   ],
   "storage": {
