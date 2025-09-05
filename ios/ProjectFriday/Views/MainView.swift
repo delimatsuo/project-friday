@@ -38,7 +38,7 @@ struct MainView: View {
 
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthenticationViewModel
-    @State private var isCallScreeningEnabled = true
+    @StateObject private var serviceToggleViewModel = ServiceToggleViewModel()
     
     var body: some View {
         NavigationStack {
@@ -74,51 +74,24 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     
-                    // Call Screening Toggle Card
-                    VStack(spacing: 16) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Call Screening")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                
-                                Text(isCallScreeningEnabled ? "Active" : "Disabled")
-                                    .font(.caption)
-                                    .foregroundColor(isCallScreeningEnabled ? .green : .red)
-                            }
-                            
-                            Spacer()
-                            
-                            Toggle("", isOn: $isCallScreeningEnabled)
-                                .toggleStyle(SwitchToggleStyle(tint: .blue))
-                        }
-                        
-                        if isCallScreeningEnabled {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Your AI assistant is screening incoming calls and will notify you of important ones.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                        .font(.caption)
-                                    Text("Connected to Twilio")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
-                    .padding(.horizontal)
+                    // Enhanced Call Screening Toggle Card
+                    ServiceToggleCard(viewModel: serviceToggleViewModel)
+                        .padding(.horizontal)
                     
-                    // Quick Stats
+                    // Quick Stats - Dynamic data from service
                     HStack(spacing: 16) {
-                        StatCard(title: "Calls Screened", value: "24", subtitle: "This week", color: .blue)
-                        StatCard(title: "Spam Blocked", value: "8", subtitle: "This week", color: .red)
+                        StatCard(
+                            title: "Calls Screened", 
+                            value: "\(serviceToggleViewModel.callsScreenedToday)", 
+                            subtitle: "Today", 
+                            color: .blue
+                        )
+                        StatCard(
+                            title: "Spam Blocked", 
+                            value: "\(serviceToggleViewModel.spamCallsBlocked)", 
+                            subtitle: "Today", 
+                            color: .red
+                        )
                     }
                     .padding(.horizontal)
                     

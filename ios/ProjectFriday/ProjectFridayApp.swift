@@ -14,6 +14,10 @@ struct ProjectFridayApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authViewModel)
+                .onOpenURL { url in
+                    // Handle widget deep links
+                    handleWidgetURL(url)
+                }
         }
     }
     
@@ -34,5 +38,31 @@ struct ProjectFridayApp: App {
         #if DEBUG
         Auth.auth().useEmulator(withHost: "localhost", port: 9099)
         #endif
+    }
+    
+    private func handleWidgetURL(_ url: URL) {
+        // Handle widget deep linking
+        guard url.scheme == "projectfriday" else { return }
+        
+        switch url.host {
+        case "toggle-service":
+            // Widget tapped to toggle service
+            // The actual toggle is handled in the widget itself
+            // This just ensures the app is aware of the action
+            print("Service toggle requested from widget")
+            
+        case "open-app":
+            // Widget tapped to open main app
+            // App is already opening, no additional action needed
+            print("App opened from widget")
+            
+        case "open-settings":
+            // Widget tapped to open settings
+            // Could navigate to specific settings screen
+            print("Settings requested from widget")
+            
+        default:
+            print("Unknown widget URL: \(url)")
+        }
     }
 }
