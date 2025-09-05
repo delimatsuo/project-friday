@@ -16,7 +16,13 @@ This document maintains the current state and progress of Project Friday develop
 ### Active Task
 - **Task ID**: 5
 - **Description**: Backend: Integrate Google Speech-to-Text and Text-to-Speech
-- **Status**: Pending (Next major backend enhancement)
+- **Status**: In Progress
+- **Progress**: 3 of 5 subtasks completed (60%)
+  - ✅ 5.1: WebSocket Server and TwiML implemented
+  - ✅ 5.2: Google STT integrated
+  - ✅ 5.3: Google TTS integrated
+  - 🔄 5.4: Streaming TTS to Twilio (in progress)
+  - 🔄 5.5: Bidirectional audio flow orchestration (in progress)
 
 ### Completed Tasks
 - Task 1: Foundation - Setup GCP/Firebase Project and Firestore (All subtasks complete)

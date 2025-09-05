@@ -1,13 +1,17 @@
 /**
- * Standalone handleCall Cloud Function
- * Simple CommonJS function for Twilio webhook
+ * Project Friday Cloud Functions
+ * Main entry point for all Firebase Functions
  */
 
 const functions = require('firebase-functions');
 const twilio = require('twilio');
 
+// Import streaming handlers
+const streamingHandlers = require('./src/handlers/twilioStreamHandler');
+
 /**
- * Handle incoming voice calls from Twilio
+ * Handle incoming voice calls from Twilio - Basic version
+ * This is the original simple handler without streaming
  */
 exports.handleCall = functions.https.onRequest(async (req, res) => {
   console.log('Incoming call webhook received:', req.body);
@@ -35,3 +39,20 @@ exports.handleCall = functions.https.onRequest(async (req, res) => {
   res.set('Content-Type', 'text/xml');
   res.status(200).send(response.toString());
 });
+
+/**
+ * Handle incoming voice calls with WebSocket streaming
+ * This version supports real-time STT and TTS
+ */
+exports.handleCallWithStream = streamingHandlers.handleCallWithStream;
+
+/**
+ * Handle incoming voice calls with custom WebSocket URL
+ * Useful for development and testing with ngrok
+ */
+exports.handleCallWithCustomStream = streamingHandlers.handleCallWithCustomStream;
+
+/**
+ * Health check endpoint for monitoring
+ */
+exports.healthCheck = streamingHandlers.healthCheck;

@@ -269,7 +269,7 @@
         "dependencies": [
           3
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -277,7 +277,7 @@
             "description": "Modify the Cloud Function to respond to the initial Twilio webhook with `<Connect><Stream>` TwiML and implement a WebSocket server to handle the subsequent connection from Twilio.",
             "dependencies": [],
             "details": "Update the HTTP-triggered function to generate TwiML that specifies the WebSocket endpoint of the function. Use a library like 'ws' in Node.js to create the WebSocket server. The server logic must handle 'connection', 'message', and 'close' events from the Twilio stream.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Update the Twilio number's voice webhook to point to the function. Call the number and verify in Twilio and Cloud Function logs that a WebSocket connection is successfully established and a 'connected' message is received from Twilio."
           },
           {
@@ -288,7 +288,7 @@
               "5.1"
             ],
             "details": "Within the WebSocket 'message' handler, parse 'media' events. Decode the base64 mu-law audio payload. Initialize the Speech-to-Text v1 client with a streaming recognition configuration (encoding: 'MULAW', sampleRateHertz: 8000). Pipe the decoded audio to the STT client and handle the returned transcript data.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "During a live test call, speak a clear phrase (e.g., \"Hello, this is a test.\") and verify that the correct and complete transcript appears in the Cloud Function logs."
           },
           {
@@ -297,7 +297,7 @@
             "description": "Create a reusable module to interface with the Google Text-to-Speech API. This module will accept a string of text and return the synthesized audio data in the required format.",
             "dependencies": [],
             "details": "Initialize the Text-to-Speech v1 client. Create a function that takes a text string as input, constructs a synthesis request (specifying a suitable voice, audio encoding 'MULAW', and sample rate 8000), calls the `synthesizeSpeech` method, and returns the resulting audio content.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Write a unit test that calls the synthesis function with a sample text like \"Hello world\". Verify that the function returns a non-empty audio buffer. Optionally, save the output to a file and play it to confirm correctness."
           },
           {
@@ -309,7 +309,7 @@
               "5.3"
             ],
             "details": "After generating audio with the TTS module, base64 encode the raw audio data. Construct a JSON 'media' message containing the stream's `sid` and the base64 audio in the `payload` field. Send this JSON string over the active WebSocket connection to Twilio.",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "In the Cloud Function, after receiving a transcript, immediately trigger a hardcoded TTS response (e.g., \"I hear you\"). During a live call, confirm that this audio response is played back to the caller after they speak."
           },
           {
@@ -321,7 +321,7 @@
               "5.4"
             ],
             "details": "In the STT result handler, once a final transcript is received, pass this text to the TTS module. Take the resulting audio from the TTS module and pass it to the outbound streaming function. This wires the STT and TTS components together, pending integration with the Gemini AI logic (Task 6).",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "Perform an end-to-end test by calling the Twilio number. Speak a sentence and verify that the system synthesizes and plays back a response based on the transcribed text (e.g., an echo of what was said)."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-04T23:53:35.919Z",
+      "updated": "2025-09-05T00:02:18.932Z",
       "description": "Tasks for master context"
     }
   }
