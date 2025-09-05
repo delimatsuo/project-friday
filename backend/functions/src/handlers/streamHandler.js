@@ -1,6 +1,7 @@
 const WebSocket = require('ws');
 const SpeechService = require('../services/speechService');
 const GeminiService = require('../services/geminiService');
+const FirestoreService = require('../services/firestoreService');
 
 class StreamHandler {
   constructor() {
@@ -9,6 +10,8 @@ class StreamHandler {
     // Initialize Gemini service with API key from environment
     this.geminiService = process.env.GOOGLE_API_KEY ? 
       new GeminiService(process.env.GOOGLE_API_KEY) : null;
+    // Initialize Firestore service
+    this.firestoreService = new FirestoreService();
   }
 
   /**
@@ -30,9 +33,12 @@ class StreamHandler {
         streamSid,
         speechService: new SpeechService(),
         callSid: null,
+        phoneNumber: null,
+        userId: null, // Will be set based on phone number or authentication
         audioBuffer: [],
         transcripts: [],
         metadata: {},
+        startTime: new Date(),
       };
 
       this.connections.set(streamSid, connection);
@@ -143,6 +149,17 @@ class StreamHandler {
       ...connection.metadata,
       ...startData,
     };
+    
+    // Extract phone number and call SID from custom parameters
+    if (startData.customParameters) {
+      connection.phoneNumber = startData.customParameters.from || 
+                               startData.customParameters.phoneNumber ||
+                               'Unknown';
+      connection.callSid = startData.customParameters.callSid || 
+                          startData.callSid || 
+                          connection.callSid;
+      connection.userId = startData.customParameters.userId || 'default-user';
+    }
 
     // Initialize Speech-to-Text with Twilio audio format
     speechService.initializeSpeechToText({
@@ -272,18 +289,77 @@ class StreamHandler {
     const { speechService } = connection;
     speechService.stopSpeechToText();
     
-    // Generate call summary if Gemini is available
+    const endTime = new Date();
+    const duration = this.calculateDuration(connection);
+    
+    // Generate call summary and analysis if Gemini is available
+    let summary = null;
+    let analysis = null;
+    
     if (this.geminiService && connection.transcripts.length > 0) {
       try {
-        const summary = await this.geminiService.generateSummary(connection.transcripts);
+        // Generate summary
+        summary = await this.geminiService.generateSummary(connection.transcripts);
         console.log('Call Summary:', summary);
         
-        // Store summary in connection for potential later use
-        connection.summary = summary;
+        // Generate analysis (sentiment, urgency, etc.)
+        analysis = await this.geminiService.analyzeConversation(connection.transcripts);
+        console.log('Call Analysis:', analysis);
         
-        // TODO: Save summary to Firestore for the user
+        connection.summary = summary;
+        connection.analysis = analysis;
       } catch (error) {
-        console.error('Error generating call summary:', error);
+        console.error('Error generating call summary/analysis:', error);
+      }
+    }
+    
+    // Save call log to Firestore
+    if (this.firestoreService && connection.callSid) {
+      try {
+        // Extract caller information from transcripts
+        const callerInfo = this.extractCallerInfo(connection.transcripts);
+        
+        const callLog = {
+          callSid: connection.callSid,
+          userId: connection.userId || 'default-user', // TODO: Get actual user ID
+          phoneNumber: connection.phoneNumber || 'Unknown',
+          callStartTime: connection.startTime,
+          callEndTime: endTime,
+          duration: duration,
+          transcripts: connection.transcripts.map(t => ({
+            text: t.transcript || t.text,
+            timestamp: t.timestamp,
+            isFinal: t.isFinal,
+            isAI: t.isAI || false,
+            confidence: t.confidence
+          })),
+          aiSummary: summary || 'No summary generated',
+          callerName: callerInfo.name || analysis?.callerName || 'Unknown',
+          callPurpose: callerInfo.purpose || analysis?.purpose || 'Not determined',
+          urgency: analysis?.urgency || 'medium',
+          sentiment: analysis?.sentiment || 'neutral',
+          actionRequired: analysis?.actionRequired || false,
+          followUpNeeded: analysis?.followUpNeeded || false,
+          metadata: {
+            ...connection.metadata,
+            streamSid: connection.streamSid,
+            audioBufferSize: connection.audioBuffer.length,
+          }
+        };
+        
+        const savedLog = await this.firestoreService.createCall(callLog);
+        console.log('Call log saved to Firestore:', savedLog.id);
+        
+        // Update user statistics
+        if (connection.userId) {
+          await this.firestoreService.updateUserStats(connection.userId, {
+            totalCalls: 1,
+            totalDuration: duration,
+            lastCallAt: endTime,
+          });
+        }
+      } catch (error) {
+        console.error('Error saving call log to Firestore:', error);
       }
     }
     
@@ -291,10 +367,47 @@ class StreamHandler {
     console.log('Session summary:', {
       streamSid: connection.streamSid,
       callSid: connection.callSid,
+      phoneNumber: connection.phoneNumber,
       transcriptCount: connection.transcripts.length,
-      duration: this.calculateDuration(connection),
+      duration: duration,
       summary: connection.summary || 'No summary generated',
+      saved: !!connection.callSid,
     });
+  }
+  
+  /**
+   * Extract caller information from transcripts
+   * @param {Array} transcripts - Array of transcript objects
+   * @returns {Object} Extracted caller info
+   */
+  extractCallerInfo(transcripts) {
+    const callerInfo = {
+      name: null,
+      purpose: null,
+    };
+    
+    // Simple extraction logic - can be enhanced with NLP
+    for (const transcript of transcripts) {
+      const text = (transcript.transcript || transcript.text || '').toLowerCase();
+      
+      // Look for name patterns
+      if (!callerInfo.name) {
+        const nameMatch = text.match(/(?:my name is|this is|i'm|i am)\s+([a-z]+(?:\s+[a-z]+)?)/i);
+        if (nameMatch) {
+          callerInfo.name = nameMatch[1].trim();
+        }
+      }
+      
+      // Look for purpose patterns
+      if (!callerInfo.purpose) {
+        const purposeMatch = text.match(/(?:calling about|regarding|for|need help with|question about)\s+(.+)/i);
+        if (purposeMatch) {
+          callerInfo.purpose = purposeMatch[1].trim();
+        }
+      }
+    }
+    
+    return callerInfo;
   }
 
   /**

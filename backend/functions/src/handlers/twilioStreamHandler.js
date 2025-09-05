@@ -64,6 +64,20 @@ exports.handleCallWithStream = functions.https.onRequest(async (req, res) => {
     url: wsUrl,
     track: 'both_tracks', // Get both inbound and outbound audio
   });
+  
+  // Pass call metadata as custom parameters
+  stream.parameter({
+    name: 'from',
+    value: req.body.From || 'Unknown'
+  });
+  stream.parameter({
+    name: 'callSid',
+    value: req.body.CallSid || ''
+  });
+  stream.parameter({
+    name: 'userId',
+    value: req.body.userId || 'default-user' // Could be set via webhook parameters
+  });
 
   console.log('TwiML Response:', response.toString());
 
