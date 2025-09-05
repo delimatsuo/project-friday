@@ -165,12 +165,15 @@ struct SignInView: View {
             .navigationBarHidden(true)
             .alert("Error", isPresented: .constant(authViewModel.errorMessage != nil)) {
                 Button("OK") {
-                    authViewModel.errorMessage = nil
+                    authViewModel.clearMessages()
                 }
             } message: {
                 if let errorMessage = authViewModel.errorMessage {
                     Text(errorMessage)
                 }
+            }
+            .onAppear {
+                authViewModel.clearMessages()
             }
             .sheet(isPresented: $showingSignUp) {
                 SignUpView()

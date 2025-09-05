@@ -143,7 +143,7 @@ struct PasswordResetView: View {
             }
             .alert("Error", isPresented: .constant(authViewModel.errorMessage != nil)) {
                 Button("OK") {
-                    authViewModel.errorMessage = nil
+                    authViewModel.clearMessages()
                 }
             } message: {
                 if let errorMessage = authViewModel.errorMessage {
@@ -151,6 +151,7 @@ struct PasswordResetView: View {
                 }
             }
             .onAppear {
+                authViewModel.clearMessages()
                 emailFocused = true
             }
         }

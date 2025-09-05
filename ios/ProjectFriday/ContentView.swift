@@ -6,13 +6,26 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authViewModel.isAuthenticated {
-                MainView()
+                if authViewModel.hasCompletedOnboarding {
+                    MainView()
+                } else {
+                    OnboardingView()
+                }
             } else {
                 SignInView()
             }
         }
         .onAppear {
             authViewModel.checkAuthenticationState()
+        }
+        .alert("Success", isPresented: .constant(authViewModel.showSuccessMessage != nil)) {
+            Button("OK") {
+                authViewModel.clearMessages()
+            }
+        } message: {
+            if let successMessage = authViewModel.showSuccessMessage {
+                Text(successMessage)
+            }
         }
     }
 }

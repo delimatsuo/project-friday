@@ -10,15 +10,51 @@ class AuthenticationViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var currentUser: User?
     @Published var errorMessage: String?
+    @Published var showSuccessMessage: String?
+    @Published var hasCompletedOnboarding = false
     
     private let firebaseService = FirebaseService.shared
     private var currentNonce: String?
     
     init() {
+        setupAuthStateListener()
         checkAuthenticationState()
     }
     
+    deinit {
+        firebaseService.removeAuthStateListener()
+    }
+    
     // MARK: - Authentication State
+    
+    private func setupAuthStateListener() {
+        firebaseService.addAuthStateListener { [weak self] firebaseUser in
+            Task { @MainActor in
+                guard let self = self else { return }
+                
+                if let firebaseUser = firebaseUser {
+                    self.currentUser = User(from: firebaseUser)
+                    self.isAuthenticated = true
+                    
+                    // Check onboarding status for existing users
+                    do {
+                        if let userData = try await self.firebaseService.fetchUser(uid: firebaseUser.uid) {
+                            self.hasCompletedOnboarding = userData.hasCompletedOnboarding ?? false
+                        } else {
+                            self.hasCompletedOnboarding = false
+                        }
+                    } catch {
+                        // If we can't fetch user data, assume onboarding is not completed
+                        self.hasCompletedOnboarding = false
+                    }
+                } else {
+                    self.currentUser = nil
+                    self.isAuthenticated = false
+                    self.hasCompletedOnboarding = false
+                }
+            }
+        }
+    }
     
     func checkAuthenticationState() {
         if let firebaseUser = firebaseService.getCurrentUser() {
@@ -27,6 +63,7 @@ class AuthenticationViewModel: ObservableObject {
         } else {
             self.currentUser = nil
             self.isAuthenticated = false
+            self.hasCompletedOnboarding = false
         }
     }
     
@@ -75,10 +112,11 @@ class AuthenticationViewModel: ObservableObject {
     func resetPassword(email: String) async {
         isLoading = true
         errorMessage = nil
+        showSuccessMessage = nil
         
         do {
             try await firebaseService.resetPassword(email: email)
-            // Success message could be shown here
+            self.showSuccessMessage = "Password reset email sent successfully. Please check your email."
         } catch {
             self.errorMessage = error.localizedDescription
         }
@@ -167,6 +205,24 @@ class AuthenticationViewModel: ObservableObject {
         
         return hashString
     }
+    
+    // MARK: - Onboarding Management
+    
+    func completeOnboarding() async {
+        guard let user = currentUser else { return }
+        
+        do {
+            try await firebaseService.updateOnboardingStatus(uid: user.id, completed: true)
+            self.hasCompletedOnboarding = true
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+    }
+    
+    func clearMessages() {
+        errorMessage = nil
+        showSuccessMessage = nil
+    }
 }
 
 // MARK: - ASAuthorizationControllerDelegate
@@ -178,7 +234,7 @@ extension AuthenticationViewModel: ASAuthorizationControllerDelegate {
             errorMessage = nil
             
             do {
-                let user = try await firebaseService.signInWithApple(authorization: authorization)
+                let user = try await firebaseService.signInWithApple(authorization: authorization, nonce: currentNonce ?? "")
                 await MainActor.run {
                     self.currentUser = user
                     self.isAuthenticated = true

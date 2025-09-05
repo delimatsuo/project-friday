@@ -470,7 +470,7 @@
         "dependencies": [
           4
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -478,7 +478,7 @@
             "description": "Connect the email/password sign-in and sign-up UI views to Firebase.Auth. Implement the logic for user creation, sign-in, password reset, and error handling.",
             "dependencies": [],
             "details": "Create an authentication service or view model to handle calls to `Firebase.Auth`. Implement functions for `createUser(withEmail:password:)`, `signIn(withEmail:password:)`, and `sendPasswordReset(withEmail:)`. Handle common errors like weak password, email already in use, and incorrect credentials by displaying alerts to the user.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test creating a new account with a valid email/password. Test signing in with the new credentials. Test failure cases like invalid email format, weak password, and incorrect login details. Verify the password reset email is sent."
           },
           {
@@ -487,7 +487,7 @@
             "description": "Implement the logic for the 'Sign in with Google' and 'Sign in with Apple' buttons, connecting them to the respective Firebase authentication providers.",
             "dependencies": [],
             "details": "Configure the necessary project settings, URL schemes, and entitlements for both Google and Apple sign-in. Use the `GoogleSignIn` SDK and `AuthenticationServices` framework to get credentials and pass them to `Firebase.Auth` for sign-in. Ensure proper handling of the sign-in callbacks and errors.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test signing in and creating a new account with a Google account. Test signing in and creating a new account with an Apple ID. Verify that the user is created in the Firebase Auth console for both methods."
           },
           {
@@ -499,7 +499,7 @@
               "8.2"
             ],
             "details": "Create a function that observes the authentication state or is called after a successful sign-up. When a new user is created, trigger a function to write a new document to the 'users' collection using the user's UID as the document ID. The document should store initial data like email, creation date, and a flag for onboarding completion.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "After creating a new user via email, Google, and Apple, verify in the Firestore console that a corresponding document is created in the 'users' collection with the correct UID and initial data."
           },
           {
@@ -510,7 +510,7 @@
               "8.3"
             ],
             "details": "Design and implement a view that is presented modally after the first successful sign-up. This view should have separate sections for Notifications and Contacts, each with explanatory text and a 'Grant Access' button. This is a 'pre-permission' prompt UI to improve acceptance rates.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Trigger the onboarding flow after a new user signs up. Verify the permissions walkthrough UI is displayed correctly, is responsive, and clearly explains the need for each permission."
           },
           {
@@ -521,7 +521,7 @@
               "8.4"
             ],
             "details": "Use the `UserNotifications` framework to request authorization for notifications. Use the `Contacts` framework (`CNContactStore`) to request authorization for contacts access. Handle the different authorization statuses (authorized, denied, notDetermined) and dismiss the walkthrough or guide the user to settings upon completion.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Tap the 'Grant Access' button for Notifications and verify the native iOS prompt appears; test both accepting and denying. Repeat for Contacts. After denying, verify the app provides a way for the user to change the setting later. Check the app's permission status in the iOS Settings app."
           }
         ]
@@ -1003,7 +1003,7 @@
     ],
     "metadata": {
       "created": "2025-09-04T15:30:49.374Z",
-      "updated": "2025-09-05T05:30:47.951Z",
+      "updated": "2025-09-05T13:31:51.103Z",
       "description": "Tasks for master context"
     }
   }

@@ -13,31 +13,56 @@ class FirebaseService: ObservableObject {
     
     private init() {}
     
+    // MARK: - Authentication State Listener
+    
+    private var authStateListener: AuthStateDidChangeListenerHandle?
+    
+    func addAuthStateListener(callback: @escaping (Firebase.User?) -> Void) {
+        authStateListener = auth.addStateDidChangeListener { _, user in
+            callback(user)
+        }
+    }
+    
+    func removeAuthStateListener() {
+        if let listener = authStateListener {
+            auth.removeStateDidChangeListener(listener)
+            authStateListener = nil
+        }
+    }
+    
     // MARK: - Authentication
     
     func signIn(email: String, password: String) async throws -> User {
-        let result = try await auth.signIn(withEmail: email, password: password)
-        let user = User(from: result.user)
-        try await saveUserToFirestore(user: user)
-        return user
+        do {
+            let result = try await auth.signIn(withEmail: email, password: password)
+            let user = User(from: result.user)
+            try await saveUserToFirestore(user: user)
+            return user
+        } catch {
+            throw AuthError(from: error)
+        }
     }
     
     func signUp(email: String, password: String, displayName: String? = nil) async throws -> User {
-        let result = try await auth.createUser(withEmail: email, password: password)
-        
-        // Update display name if provided
-        if let displayName = displayName {
-            let changeRequest = result.user.createProfileChangeRequest()
-            changeRequest.displayName = displayName
-            try await changeRequest.commitChanges()
+        do {
+            let result = try await auth.createUser(withEmail: email, password: password)
+            
+            // Update display name if provided
+            if let displayName = displayName {
+                let changeRequest = result.user.createProfileChangeRequest()
+                changeRequest.displayName = displayName
+                try await changeRequest.commitChanges()
+            }
+            
+            // Send email verification
+            try await result.user.sendEmailVerification()
+            
+            let user = User(from: result.user)
+            try await saveUserToFirestore(user: user)
+            return user
+        } catch {
+            throw AuthError(from: error)
         }
-        
-        // Send email verification
-        try await result.user.sendEmailVerification()
-        
-        let user = User(from: result.user)
-        try await saveUserToFirestore(user: user)
-        return user
     }
     
     func signOut() throws {
@@ -45,7 +70,11 @@ class FirebaseService: ObservableObject {
     }
     
     func resetPassword(email: String) async throws {
-        try await auth.sendPasswordReset(withEmail: email)
+        do {
+            try await auth.sendPasswordReset(withEmail: email)
+        } catch {
+            throw AuthError(from: error)
+        }
     }
     
     func getCurrentUser() -> Firebase.User? {
@@ -89,13 +118,9 @@ class FirebaseService: ObservableObject {
     
     // MARK: - Apple Sign In
     
-    func signInWithApple(authorization: ASAuthorization) async throws -> User {
+    func signInWithApple(authorization: ASAuthorization, nonce: String) async throws -> User {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             throw AuthError.invalidCredential
-        }
-        
-        guard let nonce = getCurrentNonce() else {
-            throw AuthError.invalidNonce
         }
         
         guard let appleIDToken = appleIDCredential.identityToken else {
@@ -122,20 +147,34 @@ class FirebaseService: ObservableObject {
     
     private func saveUserToFirestore(user: User) async throws {
         let userDoc = db.collection("users").document(user.id)
-        try await userDoc.setData([
+        
+        // Check if user document exists
+        let document = try await userDoc.getDocument()
+        let isNewUser = !document.exists
+        
+        var userData: [String: Any] = [
             "id": user.id,
             "email": user.email,
             "displayName": user.displayName ?? "",
             "phoneNumber": user.phoneNumber ?? "",
             "photoURL": user.photoURL ?? "",
             "isEmailVerified": user.isEmailVerified,
-            "createdAt": user.createdAt,
-            "lastSignIn": user.lastSignIn ?? Date(),
-            "isCallScreeningEnabled": user.isCallScreeningEnabled,
-            "allowedContacts": user.allowedContacts,
-            "blockedNumbers": user.blockedNumbers,
-            "screeningPrompt": user.screeningPrompt ?? ""
-        ], merge: true)
+            "lastSignIn": Date(),
+            "updatedAt": Date()
+        ]
+        
+        // Only set these fields for new users
+        if isNewUser {
+            userData["createdAt"] = user.createdAt
+            userData["isCallScreeningEnabled"] = user.isCallScreeningEnabled
+            userData["allowedContacts"] = user.allowedContacts
+            userData["blockedNumbers"] = user.blockedNumbers
+            userData["screeningPrompt"] = user.screeningPrompt ?? ""
+            userData["hasCompletedOnboarding"] = false
+            userData["profileCompleted"] = false
+        }
+        
+        try await userDoc.setData(userData, merge: true)
     }
     
     func fetchUser(uid: String) async throws -> User? {
@@ -151,12 +190,33 @@ class FirebaseService: ObservableObject {
         try await saveUserToFirestore(user: user)
     }
     
+    func updateOnboardingStatus(uid: String, completed: Bool) async throws {
+        let userDoc = db.collection("users").document(uid)
+        try await userDoc.setData([
+            "hasCompletedOnboarding": completed,
+            "updatedAt": Date()
+        ], merge: true)
+    }
+    
+    func updateProfileCompletion(uid: String, completed: Bool) async throws {
+        let userDoc = db.collection("users").document(uid)
+        try await userDoc.setData([
+            "profileCompleted": completed,
+            "updatedAt": Date()
+        ], merge: true)
+    }
+    
     // MARK: - Helper Methods
     
+    // Store the current nonce for Apple Sign In
+    private var currentNonce: String?
+    
+    func setCurrentNonce(_ nonce: String) {
+        currentNonce = nonce
+    }
+    
     private func getCurrentNonce() -> String? {
-        // This would be stored from the Apple Sign In request
-        // For now, return a placeholder
-        return "placeholder_nonce"
+        return currentNonce
     }
 }
 
@@ -169,21 +229,68 @@ enum AuthError: LocalizedError {
     case invalidCredential
     case invalidNonce
     case invalidToken
+    case userCancelled
+    case networkError
+    case weakPassword
+    case emailAlreadyInUse
+    case invalidEmail
+    case userNotFound
+    case wrongPassword
+    case tooManyRequests
     
     var errorDescription: String? {
         switch self {
         case .noViewController:
-            return "No view controller available for sign in"
+            return "Unable to present sign in screen. Please try again."
         case .noClientID:
-            return "No Google client ID found"
+            return "Google sign in is not properly configured. Please contact support."
         case .noIDToken:
-            return "No ID token received"
+            return "Sign in failed. Please try again."
         case .invalidCredential:
-            return "Invalid credential received"
+            return "Invalid sign in credentials. Please try again."
         case .invalidNonce:
-            return "Invalid nonce"
+            return "Apple sign in failed. Please try again."
         case .invalidToken:
-            return "Invalid token format"
+            return "Authentication failed. Please try again."
+        case .userCancelled:
+            return "Sign in was cancelled."
+        case .networkError:
+            return "Network connection failed. Please check your internet and try again."
+        case .weakPassword:
+            return "Password should be at least 6 characters long."
+        case .emailAlreadyInUse:
+            return "An account with this email already exists. Please sign in instead."
+        case .invalidEmail:
+            return "Please enter a valid email address."
+        case .userNotFound:
+            return "No account found with this email. Please sign up first."
+        case .wrongPassword:
+            return "Incorrect password. Please try again or reset your password."
+        case .tooManyRequests:
+            return "Too many failed attempts. Please try again later."
+        }
+    }
+    
+    init(from firebaseError: Error) {
+        let nsError = firebaseError as NSError
+        
+        switch nsError.code {
+        case AuthErrorCode.networkError.rawValue:
+            self = .networkError
+        case AuthErrorCode.weakPassword.rawValue:
+            self = .weakPassword
+        case AuthErrorCode.emailAlreadyInUse.rawValue:
+            self = .emailAlreadyInUse
+        case AuthErrorCode.invalidEmail.rawValue:
+            self = .invalidEmail
+        case AuthErrorCode.userNotFound.rawValue:
+            self = .userNotFound
+        case AuthErrorCode.wrongPassword.rawValue:
+            self = .wrongPassword
+        case AuthErrorCode.tooManyRequests.rawValue:
+            self = .tooManyRequests
+        default:
+            self = .networkError
         }
     }
 }

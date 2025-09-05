@@ -17,6 +17,10 @@ struct User: Identifiable, Codable {
     var blockedNumbers: [String]
     var screeningPrompt: String?
     
+    // Onboarding and profile status
+    var hasCompletedOnboarding: Bool?
+    var profileCompleted: Bool?
+    
     init(from firebaseUser: Firebase.User) {
         self.id = firebaseUser.uid
         self.email = firebaseUser.email ?? ""
@@ -32,6 +36,10 @@ struct User: Identifiable, Codable {
         self.allowedContacts = []
         self.blockedNumbers = []
         self.screeningPrompt = nil
+        
+        // Default onboarding status
+        self.hasCompletedOnboarding = false
+        self.profileCompleted = false
     }
     
     init(id: String, email: String, displayName: String? = nil, phoneNumber: String? = nil) {
@@ -49,5 +57,9 @@ struct User: Identifiable, Codable {
         self.allowedContacts = []
         self.blockedNumbers = []
         self.screeningPrompt = nil
+        
+        // Default onboarding status
+        self.hasCompletedOnboarding = false
+        self.profileCompleted = false
     }
 }
